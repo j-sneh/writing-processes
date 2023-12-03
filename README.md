@@ -6,6 +6,6 @@
 
 **Step 2:** Make a `data/` folder where the "Cleaned" Dataframes will be stored. This will be created (currently) by `abhi.ipynb` so you just need to make sure Step 1 is done properly and `/data` folder is created, then just run the `abhi.ipynb` notebook! :D
 
-**Note: ** I have also froze the requirements/dependencies into `requirements.txt`. So feel free to run this if any dependency is not there. Also, if you install a new dependency, please make sure to update the requirements by running `pip freeze > requirements.txt` in the terminal before pushing your code to the repo!
+**Note:** I have also froze the requirements/dependencies into `requirements.txt`. So feel free to run this if any dependency is not there. Also, if you install a new dependency, please make sure to update the requirements by running `pip freeze > requirements.txt` in the terminal before pushing your code to the repo!
 
 **More Details coming soon**
