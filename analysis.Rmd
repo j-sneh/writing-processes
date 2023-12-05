@@ -1,0 +1,423 @@
+---
+title: "Analysis F23"
+author: "Abhi Thanvi, Jonathan Sneh"
+date: "2023-12-04"
+output: 
+  pdf_document: default
+toc: yes
+header-includes: 
+- \usepackage{xcolor}
+- \definecolor{salmon}{RGB}{250,150,114}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+set.seed(2023)
+```
+
+```{r echo=FALSE, message=FALSE}
+if (!require("stats")) install.packages("stats")
+library(stats)
+if (!require("dplyr")) install.packages("dplyr")
+library(dplyr)
+if (!require("tidyr")) install.packages("tidyr")
+library(tidyr)
+if (!require("ggplot2")) install.packages("ggplot2")
+library(ggplot2)
+
+if (!require("knitr")) install.packages("knitr")
+library(knitr)
+if (!require("kableExtra")) install.packages("kableExtra")
+library(kableExtra)
+if (!require("reshape2")) install.packages("reshape2")
+library(reshape2)
+
+if (!require("cluster")) install.packages("cluster")
+library(cluster)
+if (!require("umap")) install.packages("umap")
+library(umap)
+if (!require("RColorBrewer")) install.packages("RColorBrewer")
+library(RColorBrewer)
+```
+
+
+\newpage
+
+# \textcolor{salmon}{Data Processing}
+
+This section dives into the tasks performed for data processing. All the steps ensure the specifications of the projects were met, but some decisions were also made to ensure a more practical data to work with. To be considerate of the pages used for the Data Processing, we performed our Data Engineering steps in a `jupyter notebook` that you can view in our repo! 
+
+## \textcolor{magenta!80!black}{Feature Engineering}
+
+- **User ID** [`id`, `string`] — Unique IDs of each user.
+  - We keep this to ensure tracking of user information for processing and analysis work.
+- **Event ID** [`event_id`, `string`] — Incremental ID log of all events.
+  - We keep this for processing steps, but remove it prior to analysis. The event IDs are useful as an ordinal feature of the log data.
+- **Down Time / Up Time** [`down_time` / `up_time`, `integer`] — Time of event on down and up strokes of key or button, in seconds.
+  - We summarize these features as an array of summary statistics; min, max, mean, median, and standard deviation. Measures of interest are max (i.e., how long a paper is written) and mean/median (i.e., when the center of most activity is).
+- **Action Time** [`action_time`, `integer`] — Difference of time between down time and up time of event, i.e., duration of action in seconds. 
+  - Similarly, we summarize this feature as min, max, mean, median, and std. This gives insight into "major" consecutive actions, hesitancy, or other special behaviors.
+- **Activity** [`activity`, `string`] — Actions to edit or modify the text (input, remove/cut, nonproduction, etc.)
+  - We compute the proportions of each of these activities. All of the cursor "Move From" events are mapped to one category called "Move From". We choose proportions over count to avoid undue influence of essays that take longer to write.
+- **Down Event**
+  - We compute the proportions of each of the activities. The events were pooled into four categories: alphanumeric, special_characters, control_keys, and unknown.
+- **Up event**
+  - Since these are the same events as down events, we ignore this feature.
+- **Text Change**
+  - We process and cluster these values into identified patterns of changes: many characters (at least 2 alphanumeric), at least one character (exactly one alphanumeric), non-zero characters (no alphanumeric). We also identified "transition" groups of "X to Y" for each of "many", "single", "none" (e.g., "many" to "many", "many" to "single", "many" to "none", etc.). There was also a "no change" group. We created one additional group to represent the sum of all "transition" events because they coincided exclusively with "replacement" activities.
+- **Cursor Position**
+  - We computed an artificial array of cursor positions with the assumption that the text was streamed with no edits corresponding to what text changes there are (i.e., non-decreasing and doesn't change if "no change" is observed in text change feature). Then we compute the MAE error metric between this stream version and the actual cursor positions to measure how much error exists between them. Greater errors imply more frequent and/or drastic changes.
+- **Word Count**
+  - We summarize these features as an array of summary statistics; min, max, mean, median, and standard deviation. We are primarily interested in the maximum measure as it indicates the length of the paper for each user.
+
+## \textcolor{magenta!80!black}{Data Summary}
+
+```{r load data, echo=FALSE}
+df = read.csv("data/df_user_summaries_select.csv")
+```
+
+Here is a sample of the processed data.
+
+```{r show data, echo=FALSE}
+df_show = t(head(df))
+colnames(df_show) = df$id[1:6]
+# Assuming df is your dataframe
+df_show %>% kable("latex", booktabs = TRUE) %>% 
+  kable_styling(latex_options = c("striped", "scale_down", "HOLD_position"))
+```
+
+
+## \textcolor{magenta!80!black}{Correlation Summary}
+
+```{r plots, echo=FALSE, message=FALSE}
+df$mae_cursor_position_norm = df$mae_cursor_position / df$word_count_max
+# Assuming 'data' is your dataframe
+numeric_features <- df %>% select_if(is.numeric)
+# Compute the correlation matrix
+cor_matrix <- cor(numeric_features, use = "complete.obs")
+# Reshape the data
+melted_cor_matrix <- melt(cor_matrix)
+# Create the heatmap
+ggplot(melted_cor_matrix, aes(Var1, Var2, fill = value)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient2(low = "blue", high = "red", mid = "white", midpoint = 0, 
+                       limit = c(-1,1), space = "Lab", 
+                       name="Pearson\nCorrelation") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        axis.title = element_blank()) +coord_fixed()
+```
+
+**Discussion**
+
+We observe some pairs of features that show signs of multicolinearity. 
+
+- The word count metrics are highly correlated as expected, we could reasonably choose the maximum measure to use.
+
+- Some features form parallel or perpendicular colinearity. 
+  - activity_input and activity_nonproduction (negative)
+  - activity_input and down_event_alphanumeric (positive)
+  - activity_input and down_event_control_keys (negative)
+  - activity_input and text_change_nochange (negative)
+  
+- Importantly, we're interested in what's correlated with the user score feature
+  - word count measures have a positive correlation with score, suggesting an association between longer essays and higher scores
+  - Error rate of cursor positions against a "streamed" output also shows a positive correlation with score - i.e., essays written with less frequent or extreme edits is somewhat associated with higher scores.
+  - Note: a positive correlation is also found between error rate of cursor positions with max word count, suggesting further that longer essays are associated with higher deviation from a "streamed" output. This suggests the possibility that interpretation of "streamed" deviation is influenced by the paper length (i.e., longer papers support possibility of edits being made "further away" from the current "streamed" position, thus increasing the error rate). When we normalized the error rate by the paper size, we see that the correlation between the normalized error rate and the paper score is nearly zero. So, this feature is likely irrelevant for analysis.
+
+\newpage
+
+# \textcolor{salmon}{Unsupervised Learning Algorithms}
+
+This section dives into the tasks performed for the unsupervised learning algorithms. Currently, focusing on K-Means and Hierarchical Clustering. **THIS SECTION SUPER MESSY RN. Please feel free to edit or improve in any way**
+
+```{r}
+# test train split
+test_ids = sample(1:nrow(df), as.integer(0.2 * nrow(df)))
+data = scale(df[, -1])
+train = data[-test_ids, ]
+test = data[test_ids, ]
+```
+
+## \textcolor{magenta!80!black}{K-Means Algorithm}
+
+using averaged inertia of a few clustering samples across a range of number of clusters (i.e., k=1, ..., 14)
+
+```{r}
+# Range of k values to try
+cluster_num_list <- 1:14
+
+# Initialize a vector to store average inertias
+avg_inertia_list <- numeric(length(cluster_num_list))
+
+# Iterate over different values of k
+for (k in cluster_num_list) {
+  sub_inertia_list <- numeric(3) # For storing inertia of each trial
+  
+  for (i in 1:3) {
+    set.seed(i) # Setting seed for reproducibility
+    kmeans_result <- kmeans(train, centers=k, nstart=25, iter.max = 50)
+    sub_inertia_list[i] <- kmeans_result$tot.withinss
+  }
+  
+  avg_inertia_list[k] <- mean(sub_inertia_list)
+}
+
+# Plotting the elbow plot
+ggplot(data.frame(Clusters=cluster_num_list, Inertia=avg_inertia_list), 
+       aes(x=Clusters, y=Inertia)) +
+  geom_line() +
+  geom_point() +
+  theme_minimal() +
+  ggtitle("Elbow Method for Optimal k") +
+  xlab("Number of Clusters") +
+  ylab("Average Inertia")
+
+```
+
+selected `k=5` clusters as closest to "elbow" of the inertia plot
+
+```{r}
+# Perform K-means clustering
+# Here, we are specifying 3 clusters, but you can change this number
+result <- kmeans(train, centers=5)
+
+ggplot(data.frame(train), aes(x=score, y=word_count_max)) +
+  geom_point(aes(color=factor(result$cluster))) +
+  scale_color_discrete(name="Cluster") +
+  theme_minimal() +
+  ggtitle("K-means Clustering")
+```
+
+Using silhouette scores to evaluate how well the clustering structure fits in terms of similarity, i.e., more higher scores in a cluster imply greater similarity of points to its own cluster and poorer similarity to other clusters. The average silhouette score of 0.43 suggests that the clusters are somewhat favorably well separated and that the points within clusters aren't too dispersed. However, cluster 4 shows issues with cohesion and separation.
+
+```{r}
+# Compute silhouette information
+silhouette_info <- silhouette(result$cluster, dist(train))
+
+# Plotting the silhouette plot
+plot(silhouette_info, col=1:k, border=NA, main="Silhouette Plot")
+```
+
+Additionally, with projecting the data using UMAP, we see that the clusters might not be very well separated and aren't globular, so it is reasonable to conclude that KMeans algorithm may struggle with this data.
+
+```{r}
+umap_result <- umap(train, n_components = 2)
+
+umap_data <- as.data.frame(umap_result$layout)
+colnames(umap_data) <- c("UMAP1", "UMAP2")
+
+clusters <- as.factor(result$cluster)
+umap_data$Cluster <- clusters
+
+# Choose a palette
+palette <- brewer.pal(n = 5, name = "Set1")  # Adjust 'name' as needed
+
+ggplot(umap_data, aes(x = UMAP1, y = UMAP2, color = Cluster)) +
+  geom_point(alpha = 0.7) +
+  scale_color_manual(values = palette) +
+  theme_minimal() +
+  ggtitle("UMAP Projection of the Data")
+
+```
+
+Here's distribution of scores in UMAP
+
+```{r}
+scores <- as.factor(as.data.frame(train)$score)
+umap_data$Score <- scores
+
+ggplot(umap_data, aes(x = UMAP1, y = UMAP2, color = Score)) +
+  geom_point(alpha = 0.7) +
+  scale_color_manual(values = rainbow(12)) +
+  theme_minimal() +
+  ggtitle("UMAP Projection of the Data")
+```
+
+investigation of the score distribution suggests that the underlying clustering structure of the data does not closely align with the structure of scores.
+
+spread of data between kmeans clusters and scores. characterizations are as follows:
+
+- cluster 1 tends to capture those who score 3 to 6.
+- cluster 2 tends to capture those who score between 3.5 to 4.5
+- cluster 3 tends to capture those who score 1.5 to 4.5
+- cluster 4 tends to capture those who score 3.5 to 4
+- cluster 5 tends to capture those who score 2.5 to 4.5
+
+e.g., a user who scores around 5 is likely to be in cluster 1
+
+while there are some relationships, it would appear that the dispersions of scores between groups tend to overlap heavily and are not well separate to segment the groups in a very meaningful way. However clusters 1 and 2 vs. clusters 3, 4, and 5 seem to show some disparity.
+
+```{r}
+t(table(result$cluster, df[-test_ids, ]$score)) / nrow(df[-test_ids, ])
+```
+
+to predict on new data in test...
+
+```{r}
+assign_cluster <- function(new_data, centers) {
+  # Calculate Euclidean distances from each new data point to each cluster center
+  distances <- as.matrix(dist(rbind(centers, new_data), method = "euclidean"))
+  distances <- distances[(nrow(centers)+1):nrow(distances), 1:nrow(centers)]
+  
+  # Assign each new data point to the nearest cluster
+  max.col(-distances)
+}
+
+new_clusters <- assign_cluster(test, result$centers)
+```
+
+```{r}
+acc_data = as.matrix(
+  t(table(new_clusters, df[test_ids, ]$score)) / nrow(df[test_ids, ])
+)
+
+for (i in 1:5) {
+  prop_plot = ggplot(
+  data.frame(
+      Index = rownames(acc_data), Proportion = acc_data[, i]
+    ), 
+  aes(x = Index, y = Proportion)) +
+  geom_bar(stat = "identity") +
+  theme_minimal() +
+  xlab("Index") +
+  ylab("Proportion") +
+  ggtitle("Histogram of Proportions") + 
+  ylim(c(0, 1))
+  print(prop_plot)
+}
+```
+
+
+```{r}
+acc_data = as.matrix(
+  t(table(new_clusters, as.integer(df[test_ids, ]$score))) / nrow(df[test_ids, ])
+)
+```
+
+```{r}
+for (i in 1:5) {
+  prop_plot = ggplot(
+  data.frame(
+      Index = rownames(acc_data), Proportion = acc_data[, i]
+    ), 
+  aes(x = Index, y = Proportion)) +
+  geom_bar(stat = "identity") +
+  theme_minimal() +
+  xlab("Index") +
+  ylab("Proportion") +
+  ggtitle("Histogram of Proportions") + 
+  ylim(c(0, 1))
+  print(prop_plot)
+}
+
+```
+
+selected Ward's linkage due to cohesion and separability issues in the data. we select 7 clusters because there are 7 integer scores (after rounding half scores). The clustering structure in the data seems to support this number of clusters.
+
+## \textcolor{magenta!80!black}{Hierarchial Clustering}
+
+```{r}
+distance_matrix <- dist(train, method = "euclidean")
+
+hc <- hclust(distance_matrix, method = "ward.D")
+
+plot(hc, main = "Hierarchical Clustering with Complete Linkage", 
+     xlab = "", sub = "", cex = 0.9)
+```
+
+```{r}
+k <- 7  # Number of clusters
+plot(hc, main = "Hierarchical Clustering with Complete Linkage", 
+     xlab = "", sub = "", cex = 0.9)
+rect.hclust(hc, k = k, border = "red")  # You can change the border color if you like
+```
+
+clustering structure in UMAP
+
+```{r}
+clusters <- as.factor(cutree(hc, k = k))
+umap_data$ClusterHC <- clusters
+
+# Choose a palette
+palette <- brewer.pal(n = k, name = "Set1")  # Adjust 'name' as needed
+
+ggplot(umap_data, aes(x = UMAP1, y = UMAP2, color = ClusterHC)) +
+  geom_point(alpha = 0.7) +
+  scale_color_manual(values = palette) +
+  theme_minimal() +
+  ggtitle("UMAP Projection of the Data")
+```
+
+investigation of the score distribution suggests that the underlying clustering structure of the data ...
+
+spread of data between kmeans clusters and scores. characterizations are as follows:
+
+- cluster 1 tends to capture those who score 2.5 to 4.5
+- cluster 2 tends to capture those who score 3.5 to 4.5
+- cluster 3 tends to capture those who score 1.5 to 4.5
+- cluster 4 tends to capture those who score 2.5 to 4
+- cluster 5 tends to capture those who score 3.5 to 6
+- cluster 6 tends to capture those who score 2.5 to 4.5
+- cluster 7 tends to capture those who score 3 to 4.5
+
+e.g., a user who scores around 5 is likely to be in cluster 5
+
+
+```{r}
+t(table(umap_data$ClusterHC, df[-test_ids, ]$score)) / nrow(df[-test_ids, ])
+```
+
+to predict on new data in test...
+
+```{r}
+# Function to calculate centroids of clusters
+calculate_centroids <- function(data, clusters) {
+  aggregate(data, by=list(cluster=clusters), FUN=mean)
+}
+
+# Function to predict the cluster of new data
+predict_cluster <- function(new_data, train_data, clusters) {
+  centroids <- calculate_centroids(train_data, clusters)
+  # Remove the cluster column
+  centroids <- centroids[, -1]
+  
+  # Function to find nearest centroid
+  find_nearest_centroid <- function(point, centroids) {
+    dists <- apply(centroids, 1, function(centroid) dist(rbind(centroid, point)))
+    which.min(dists)
+  }
+  
+  apply(new_data, 1, find_nearest_centroid, centroids = centroids)
+}
+
+new_clusters <- predict_cluster(test, train, clusters)
+```
+
+```{r}
+acc_data = as.matrix(
+  t(table(new_clusters, as.integer(df[test_ids, ]$score))) / nrow(df[test_ids, ])
+)
+```
+
+```{r}
+for (i in 1:7) {
+  prop_plot = ggplot(
+  data.frame(
+      Index = rownames(acc_data), Proportion = acc_data[, i]
+    ), 
+  aes(x = Index, y = Proportion)) +
+  geom_bar(stat = "identity") +
+  theme_minimal() +
+  xlab("Index") +
+  ylab("Proportion") +
+  ggtitle("Histogram of Proportions") + 
+  ylim(c(0, 1))
+  print(prop_plot)
+}
+
+```
+
+
+
+
