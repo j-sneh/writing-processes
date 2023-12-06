@@ -189,7 +189,7 @@ ggplot(data.frame(train), aes(x=score, y=word_count_max)) +
   ggtitle("K-means Clustering")
 ```
 
-Using silhouette scores to evaluate how well the clustering structure fits in terms of similarity, i.e., more higher scores in a cluster imply greater similarity of points to its own cluster and poorer similarity to other clusters. The average silhouette score of 0.43 suggests that the clusters are somewhat favorably well separated and that the points within clusters aren't too dispersed. However, cluster 4 shows issues with cohesion and separation.
+Using silhouette scores to evaluate how well the clustering structure fits in terms of similarity, i.e., more higher scores in a cluster imply greater similarity of points to its own cluster and poorer similarity to other clusters. The average silhouette score of 0.17 suggests that the clusters are somewhat favorably well separated and that the points within clusters aren't too dispersed. However, cluster 4 shows issues with cohesion and separation.
 
 ```{r}
 # Compute silhouette information
