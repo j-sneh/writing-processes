@@ -69,7 +69,38 @@ We generally tried to use as much as we could from our STAT 432 course materials
 
 \newpage
 # \textcolor{salmon}{Literature Review}
-Coming soon :'(
+We aim to understand our pursuit of understanding and addressing the problem statement, we embarked on a journey of reviewing existing submissions to gain insights and inspiration. This preliminary exploration aimed to familiarize ourselves with various approaches employed by others in the field.
+
+## Noteworthy Submissions
+
+Upon reviewing the top-performing submissions, we observed a prevalent trend—the use of topics beyond the scope of our class and a preference for Python implementation. Among these submissions, one that stood out was by Maok Yongsuk [\[Code Here\]](https://www.kaggle.com/code/yongsukprasertsuk/writing-processes-to-quality-0-584/notebook), achieving the highest public score of 0.584.
+
+## Maok Yongsuk's Approach
+
+Maok's methodology deviated from the conventional as he introduced an essay constructor for tokenization. This innovative approach facilitated the extraction of meaningful features from textual data, enabling the model to capture intricate patterns within essays. Notably, he opted for Python's `LightGBM` function, a variant of the XGBoost framework employing a leaf-wise tree growth strategy. This strategic choice results in a more balanced and potentially shallower tree, enhancing efficiency on large datasets. Another key aspect that caught our attention was Maok's adept use of feature engineering. Inspired by others in the field, he incorporated a set of features commonly utilized by Kaggle community members. These features, identified through rigorous exploration and collaboration, added valuable information to his model.
+
+## Other Submission Approaches
+
+In addition to Maok Yongsuk's approach, several other submissions demonstrated the utilization of topics outside our coursework. Notably, deep learning-based solutions and the combination of neural networks (NN) with `LightGBM` were prevalent strategies. Deep learning-based solutions and the integration of neural networks (NN) with LightGBM offer the potential to enhance prediction accuracy and create adaptive models. However, these approaches come with notable challenges. Firstly, they often incur increased computation costs, demanding substantial resources for training and potentially limiting their feasibility in resource-constrained projects. The inherent complexity of deep learning models poses interpretability challenges, hindering a clear understanding of their inner workings. 
+
+All in all, It was a common thread among all submissions to engage in feature engineering that made sense during the exploratory data analysis (EDA) process, which is a practice we intend to adopt. Furthermore, there is a consideration of exploring gradient boosting techniques for our project, aligning with what we know/learned from class and the strategies employed by successful submissions.
+
+
+## Implications for Our Project 
+
+The incorporation of `LightGBM` for predictions, the utilization of engineered features through tokenization (including those derived from the essay constructor), and the integration of additional features sourced from the Kaggle community collectively contributed to Maok's remarkable achievement with a highest public score of 0.584. In considering our own project, we find inspiration in these ideas from all submissions we reviewed, evaluating their relevance to our class material and potential applicability to our unique context. As we progress, we aim to integrate insights from Maok's and other Kaggle submission approaches into our methodology, adapting and refining these concepts to enhance the robustness of our own model.
+
+## Citations
+
+- Maok Yongsuk's Kaggle Submission: \href{https://www.kaggle.com/code/yongsukprasertsuk/writing-processes-to-quality-0-584}{\textcolor{purple!70!white}{Maok Yongsuk}}
+
+- Other Submission: \href{https://www.kaggle.com/code/cody11null/lgbm-x2-nn}{\textcolor{purple!70!white}{Cody’s LGBM + NN}}
+
+- Other Submission 2 (LGBM + NN): \href{https://www.kaggle.com/code/seoyunje/feature-1-lgb-nn-ridge}{\textcolor{purple!70!white}{Seoyunje’s LGBM + NN}}
+
+- Research 1: \href{https://scikit-learn.org/stable/auto_examples/cluster/plot_kmeans_silhouette_analysis.html#:~:text=The%20silhouette%20plot%20displays%20a,like%20number%20of%20clusters%20visually.}{\textcolor{purple!70!white}{Research - Silhouette Plots}}
+
+- Research 2: \href{https://towardsdatascience.com/implementing-and-interpreting-ordinal-logistic-regression-1ee699274cf5}{\textcolor{purple!70!white}{Ordinal Logistic Regression}}
 
 \newpage
 # \textcolor{salmon}{Data Processing}
