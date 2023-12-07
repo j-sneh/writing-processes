@@ -42,19 +42,34 @@ library(RColorBrewer)
 
 
 \newpage
-# \textcolor{salmon}{Project Overview}
+# \textcolor{salmon}{Project Overview} \vspace{4mm}
+We highly recommend everyone to checkout our \href{https://github.com/j-sneh/writing-processes}{\textcolor{purple!70!white}{Github Repository}}
+ for all the data cleansing, feature engineering, analysis, and other files! Many of our procedures are not included in the report, and the repo provides a behind-the-scenes access to that information! We understand it is important to understand each procedure but also reproduce results, therefore we have maintained a highly intuitive code-base for it! :)
 
-- **Goals:**
+## \textcolor{magenta!80!black}{Goals:}
 
-- **Approach:**
+While this project is an assigned project for STAT 432 Fall 2023 (UIUC), our goal is to apply what we have learned in our class and generate not necessarily the "most accurate", but rather the most holistic solution on this unique problem. The topic we are dealing with \href{https://www.kaggle.com/competitions/linking-writing-processes-to-writing-quality}{\textcolor{purple!70!white}{Linking Writing Processes to Writing Quality}} where we explore data on typing behavior to predict essay quality between a score of 0-6 (inclusive) using many of the statistical learning techniques. Our work will help explore the relationship between learners’ writing behaviors and writing performance, which could provide valuable key insights for writing instruction, the development of automated writing evaluation techniques, and help in educational situations.
+ 
 
-- **Unique Methods:**
+## \textcolor{magenta!80!black}{Approach:} 
+We divide our work into three main section. 
 
-- **Conclusion:**
+  - **Data Processing** $\rightarrow$ Cleanse, extract, and engineer features for our Supervised and Unsupervised learning portion. Our data processing procedure also has some basic EDA work done to allow us to engineer valuable features.
+  
+  - **Unsupervised Learning** $\rightarrow$ Perform clustering algorithms on the cleansed data (and 80-20 split).
+  We chose to do K-Means and Hierarchical Clustering algorithms as we wanted to explore what we learned in class. These unsupervised techniques allow us to find hidden patterns in our data and act as an outlet for advanced EDA. How the clusters were chosen, what insights we drew, the good and bad about these clusters will all be explored later in this section. 
+  
+  - **Regression/Classification Models** $\rightarrow$ It is in this section where we try to predict scores and aim to achieve our original goal. \textcolor{red}{**JONATHAN ADD YOUR STUFF HERE**} :D
+
+## \textcolor{magenta!80!black}{Unique Approaches/Techniques:} 
+We generally tried to use as much as we could from our STAT 432 course materials as the source of knowlegde. There were moments where we did consult other topics such as pairing elbow method with Silhouette Plots (to determine how well the cluster fit), \textcolor{red}{**JONATHAN ADD YOUR STUFF HERE**...prolly the STAT 426 stuff?} :D
+
+## \textcolor{magenta!80!black}{Conclusion:} TBD
 
 
 \newpage
 # \textcolor{salmon}{Literature Review}
+Coming soon :'(
 
 \newpage
 # \textcolor{salmon}{Data Processing}
