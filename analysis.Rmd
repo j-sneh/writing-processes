@@ -163,7 +163,8 @@ This section dives into the tasks performed for the unsupervised learning algori
 ```{r}
 # test train split
 test_ids = sample(1:nrow(df), as.integer(0.2 * nrow(df)))
-data = scale(df[, -1])
+data = as.data.frame(scale(df[, -(1:2)]))
+data = cbind(score=df$score, data)
 train = data[-test_ids, ]
 test = data[test_ids, ]
 ```
@@ -448,5 +449,77 @@ for (i in 1:7) {
 ```
 
 
+# \textcolor{salmon}{Supervised Learning Algorithms}
 
+## \textcolor{magenta!80!black}{Proportional Odds Model (GLM)}
 
+Since the score is an ordinal variable, we can use a proportional odds model to predict the score. We'll use the `VGAM` package to fit the model and use the `step4` function to do a stepwise selection to find the best model. `VGAM` is a package that allows for fitting of a multinomial/propodds (vector based) linear model. It assumes cumulative probabilities and keeps the same $\beta$ for all categories, but allows for different intercepts. 
+
+We'll use only non-collinear features and do a subset selection. We'll also convert `score` to an ordered factor to ensure that the model knows that it is an ordinal variable.
+
+```{r}
+library(VGAM)
+train.propodds <- train 
+train.propodds$score <- as.ordered(train.propodds$score)
+train.propodds <- subset(train.propodds, select=c(score, word_count_max, down_event_special_character, mae_cursor_position, down_time_std, down_event_control_keys, text_change_not_q, activity_input))
+
+test.propodds <- test
+test.propodds$score <- as.ordered(test.propodds$score)
+test.propodds <- subset(test.propodds, select=c(score, word_count_max, down_event_special_character, mae_cursor_position, down_time_std, down_event_control_keys, text_change_not_q, activity_input))
+
+head(train.propodds)
+```
+
+```{r}
+prop.wc <- vglm(score ~ word_count_max, data = train.propodds, family = propodds(reverse = F))
+
+prop.upper <- vglm(score ~ ., data = train.propodds, family = propodds(reverse = F))
+
+summary(prop.upper)
+```
+
+We can do a stepwise selection, starting from all variables, to find the best model. This will pick the model with the lowest AIC, which aims for better prediction error. 
+
+```{r}
+prop.step <- step4(prop.upper, scope = list(lower = prop.wc, upper = prop.upper), direction = "both")
+
+summary(prop.step)
+```
+
+Using our selected model, we can predict the probabilities of falling into each category and selecting the category with the highest probability as the predicted score. We can then compare the predicted scores to the actual scores to see how well our model did.
+
+```{r}
+head(predict(prop.step, newdata = train.propodds, type = "response"))
+
+train.prop.probs <- predict(prop.step, newdata = train.propodds, type = "response")
+
+labels <- sort(unique(train.propodds$score))
+get_score <- function(x) { labels[which.max(x)] }
+# Column with maximum probability is the predicted score (label)
+train.prop.pred_score <- apply(train.prop.probs, 1, get_score)
+
+# Compare predicted scores to actual scores
+table(train.prop.pred_score, train.propodds$score)
+mean(as.numeric(train.prop.pred_score) == as.numeric(train.propodds$score))
+```
+
+```{r}
+test.prop.probs <- predict(prop.step, newdata = test.propodds, type = "response")
+
+# Column with maximum probability is the predicted score (label)
+test.prop.pred_score <- apply(test.prop.probs, 1, get_score)
+
+# Compare predicted scores to actual scores
+table(test.prop.pred_score, test.propodds$score)
+mean(as.numeric(test.prop.pred_score) == as.numeric(test.propodds$score))
+```
+
+Unfortunately, our model does not do very well. It predicts the correct score only around one third of the time on both the training and testing data. From the confusion matrix, we see that the model is not very good at predicting the lower scores. It predicts a lot of the mid level scores (3 - 4.5), but is not good at differentiating between them. 
+
+Instead of looking at the predicted classification accuracy, we can look at the MSE. This will give us a better idea of how far off the predictions are. 
+
+```{r}
+mean(abs(as.numeric(train.prop.pred_score) - as.numeric(train.propodds$score)))
+mean(abs(as.numeric(test.prop.pred_score) - as.numeric(test.propodds$score)))
+```
+On average, the model is off by around 1.1-1.2 points on both the training and testing data. This is still a pretty large difference considering that the scores range from 1 to 6, but not horrible.
