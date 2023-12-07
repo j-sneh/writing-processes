@@ -1,5 +1,5 @@
 ---
-title: "Analysis F23"
+title: "Analysis Fall 23"
 author: "Abhi Thanvi, Jonathan Sneh"
 date: "2023-12-04"
 output: 
@@ -42,7 +42,21 @@ library(RColorBrewer)
 
 
 \newpage
+# \textcolor{salmon}{Project Overview}
 
+- **Goals:**
+
+- **Approach:**
+
+- **Unique Methods:**
+
+- **Conclusion:**
+
+
+\newpage
+# \textcolor{salmon}{Literature Review}
+
+\newpage
 # \textcolor{salmon}{Data Processing}
 
 This section dives into the tasks performed for data processing. All the steps ensure the specifications of the projects were met, but some decisions were also made to ensure a more practical data to work with. To be considerate of the pages used for the Data Processing, we performed our Data Engineering steps in a `jupyter notebook` that you can view in our repo! 
