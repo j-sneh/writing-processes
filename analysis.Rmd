@@ -149,7 +149,7 @@ df_show = t(head(df))
 colnames(df_show) = df$id[1:6]
 # Assuming df is your dataframe
 df_show %>% kable("latex", booktabs = TRUE) %>% 
-  kable_styling(latex_options = c("striped", "scale_down", "HOLD_position"))
+  kable_styling(latex_options = c("striped", "HOLD_position"))
 ```
 
 
@@ -557,26 +557,39 @@ train.prop.pred_score <- apply(train.prop.probs, 1, get_score)
 ```
 ```{r}
 # Confusion Matrix
-kable(table(train.prop.pred_score, train.supervised$score), caption = "Training Propodds Confusion Matrix")
+prop.t1 <- (table(train.prop.pred_score, train.supervised$score))
 # Accuracy
-mean(conv(train.prop.pred_score) == conv(train.supervised$score))
+cat("Training Accuracy: ", mean(conv(train.prop.pred_score) == conv(train.supervised$score)))
 # MAE
-mean(abs(conv(train.prop.pred_score) - conv(train.supervised$score)))
+cat("Training MAE: ", mean(abs(conv(train.prop.pred_score) - conv(train.supervised$score))))
 ```
 
-```{r}
+```{r, echo=FALSE}
 test.prop.probs <- predict(prop.step, newdata = test.supervised, type = "response")
 
 # Column with maximum probability is the predicted score (label)
 test.prop.pred_score <- apply(test.prop.probs, 1, get_score)
 
-# Compare predicted scores to actual scores
 # Confusion Matrix
-kable(table(test.prop.pred_score, test.supervised$score), caption = "Testing Propodds Confusion Matrix")
+prop.t2 <- (table(test.prop.pred_score, test.supervised$score))
 # Accuracy
-mean(conv(test.prop.pred_score) == conv(test.supervised$score))
+cat("Testing Accuracy: ", mean(conv(test.prop.pred_score) == conv(test.supervised$score)))
 # MAE
-mean(abs(conv(test.prop.pred_score) - conv(test.supervised$score)))
+cat("Testing MAE: ", mean(abs(conv(test.prop.pred_score) - conv(test.supervised$score))))
+```
+
+```{r, echo=FALSE}
+# plot both confusion matrix side by side for comparison
+# align the two tables left and right
+
+# scale the table size
+# par(mar = c(4, 4, .1, .1))
+# plot the first table
+prop.k1 <- kable(prop.t1, caption = "Propodds Training Confusion Matrix") %>% kable_styling(full_width = F, position = "left", latex_options = c("scale_down", "HOLD_position"))
+prop.k2 <- kable(prop.t2, caption = "Propodds Testing Confusion Matrix") %>% kable_styling(full_width = F, position = "right", latex_options = c("scale_down", "HOLD_position"))
+
+prop.k1
+prop.k2
 ```
 
 Our model does okay, especially given that there are 12 categories. It predicts the correct score only around 32% of the time on the training and 28.7% on the testing data. From the confusion matrix, we see that the model is not very good at predicting the lower and upper extremes. It predicts a lot of the mid level scores (3 - 4.5), but is not good at differentiating between them. 
@@ -591,14 +604,11 @@ During our data analysis/unsupervised learning, we saw that the clustering algor
 
 We'll use the `caret` package to tune our `k` value through 10-fold cross validation. A larger `k` will introduce more bias in the model, and a smaller `k` will have a larger variance. Since there are lots of records, a large `k` value could be useful, without introducing too much bias—so we'll test a range of `k` values from 1 to 400. 
 
-```{r}
+```{r, results='hide', echo = FALSE}
 set.seed(432)
 library(caret)
 
-seeds <- vector(mode = "list", length = 11)
-for (i in 1:10) seeds[[i]] <- 432
-
-control <- trainControl(method = "cv", number = 10, seeds = )
+control <- trainControl(method = "cv", number = 10)
 kgrid <- data.frame(k = seq(1, 400, 10))
 
 knn.tuned <- train(score ~ ., data = train.supervised, 
@@ -609,20 +619,20 @@ knn.tuned
 
 From the model output, we saw that the best `k` value is 71, with a (cross-validated) accuracy of around 30.66%. We expect to see similar results checking with the entire training dataset. This is similar to our proportional odds model. 
 
-```{r}
+```{r, echo=FALSE}
 set.seed(432)
 knn.train.pred <- predict(knn.tuned, newdata = train.supervised)
 # Confusion Matrix
-kable(table(knn.train.pred, train.supervised$score), caption = "Training KNN Confusion Matrix")
+(table(knn.train.pred, train.supervised$score))
 # Accuracy
-mean(conv(knn.train.pred) == conv(train.supervised$score))
+cat("Accuracy: ", mean(conv(knn.train.pred) == conv(train.supervised$score)))
 # MAE
-mean(abs(conv(knn.train.pred) - conv(train.supervised$score)))
+cat("MAE: ", mean(abs(conv(knn.train.pred) - conv(train.supervised$score))))
 ```
 
 Checking the full training data, we see that the accuracy is 34%! This is high, but we should be careful. The model could be overfitting to the training data. 
 
-```{r}
+```{r, echo=FALSE}
 plot(knn.tuned)
 ```
 
@@ -630,15 +640,15 @@ From the plot, we see the accuracy is low for small `k` values and quickly rises
 
 Let's also see how the model does on the testing data.
 
-```{r}
+```{r, echo=FALSE}
 set.seed(432)
 knn.test.pred <- predict(knn.tuned, newdata = test.supervised)
 # Confusion Matrix
-kable(table(knn.test.pred, test.supervised$score), caption = "Testing KNN Confusion Matrix")
+(table(knn.test.pred, test.supervised$score))
 # Accuracy
-mean(conv(knn.test.pred) == conv(test.supervised$score))
+cat("Accuracy: ",mean(conv(knn.test.pred) == conv(test.supervised$score)))
 # MAE
-mean(abs(conv(knn.test.pred) - conv(test.supervised$score)))
+cat("MAE: ", mean(abs(conv(knn.test.pred) - conv(test.supervised$score))))
 ```
 
 The model does a noticeably bit worse on the testing data, with an accuracy of around 24.5% (10 percentage points). This is likely an indicator that the model is overfitting to the training data and clusters/predictor spread is different between the training and testing data. This MAE is higher than the proportional odds model (0.57 for training, and 0.66 for testing). The KNN model only looks at euclidean distances. Our unsupervised learning showed that the clusters are overlapping, so it may have a hard time differentiating between scores and can be less accurate than the proportional odds model.
@@ -649,9 +659,9 @@ We saw from the literature review that gradient boosting was effective. So, we'l
 
 We'll tune the `eta` (learning rate), as this is a critical hyperparameter of gradient boosting. For small values of `eta`, the model will take longer to converge, but will be more accurate. For large values of `eta`, the model will converge quickly, but will be less accurate.
 
-We'll use the default `max_depth` (6) and an `nrounds` of 15, as we saw overfitting with larger `nrounds (50), and will reduce the computational time. We'll pick the model with the lowest training error.
+We'll use the default `max_depth` (6) and an `nrounds` of 15, as we saw overfitting with larger `nrounds` (50), and will reduce the computational time. We'll pick the model with the lowest training error.
 
-```{r}
+```{r, echo = FALSE}
 set.seed(432)
 library(xgboost)
 eta_vals <- expand.grid(eta = c(0.01, 0.02, 0.03, 0.04, 0.05))
@@ -668,16 +678,17 @@ for (i in 1:nrow(eta_vals)) {
 }
 ```
 
-```{r}
+```{r, echo=FALSE}
 # eta_vals <- expand.grid(eta = c(0.01, 0.02, 0.03, 0.04, 0.05))
-accuracy
+cat("Eta Vals: 0.01, 0.02, 0.03, 0.04, 0.05")
+cat("Accuracy per Eta:", accuracy)
 best_eta <- eta_vals[which.max(accuracy),]
-best_eta
+cat("Best Eta: ",best_eta)
 ```
 
 We saw that the best `eta` value is `0.05`, with a training accuracy of `0.6024279`. This accuracy is much larger than any other training accuracy we've seen. xgboost can very quickly converge to 100% accuracy on the training data, especially with large `nrounds` and `eta` values. This may be an indicator that the model is overfitting to the training data. We saw this when we used larger `eta` values, so we chose smaller values and we can see how it does on the testing data.
 
-```{r}
+```{r, echo=FALSE}
 set.seed(432)
 model.xgb <- xgboost(data = as.matrix(train.supervised[, -1]), 
 label = as.numeric(train.supervised$score) - 1, nrounds = 15, 
@@ -688,26 +699,26 @@ train.predictions <- predict(model.xgb, as.matrix(train.supervised[, -1]))
 train.labeled_predictions <- sapply(predictions + 1, score_from_factor)
 
 # confusion matrix
-kable(table(train.labeled_predictions, train.supervised$score), caption = "Training XGBoost Confusion Matrix")
+(table(train.labeled_predictions, train.supervised$score))
 # train accuracy
-mean(conv(train.labeled_predictions) == conv(train.supervised$score))
+cat("Train Accuracy: ", mean(conv(train.labeled_predictions) == conv(train.supervised$score)))
 # train MAE
-mean(abs(conv(labeled_predictions) - conv(train.supervised$score)))
+cat("Train MAE: ", mean(abs(conv(labeled_predictions) - conv(train.supervised$score))))
 ```
 
-```{r}
+```{r, echo=FALSE}
 set.seed(432)
 test.predictions <- predict(model.xgb, as.matrix(test.supervised[, -1]))
 test.labeled_predictions <- sapply(test.predictions + 1, score_from_factor)
 
 # confusion matrix
-kable(table(test.labeled_predictions, test.supervised$score), caption = "Testing XGBoost Confusion Matrix")
+(table(test.labeled_predictions, test.supervised$score))
 
 # # test accuracy
-mean(conv(test.labeled_predictions) == conv(test.supervised$score))
+cat("Test Accuracy: ", mean(conv(test.labeled_predictions) == conv(test.supervised$score)))
 
 # # test MAE
-mean(abs(conv(test.labeled_predictions) - conv(test.supervised$score)))
+cat("Test MAE: ", mean(abs(conv(test.labeled_predictions) - conv(test.supervised$score))))
 ```
 
-Here, we get a testing accuracy of around 30%, which is still lower than the training data (as expected). This is the best test accuracy we've seen so far, as well as an MAE on the lower end (0.61). This makes sense, as gradient boosting is a powerful technique that can capture complex relationships between variables — not just linear relationships or clusters based on euclidean distance. However, all three models have similar accuracy and MAEs, so it's hard to definitively say which is the best model—especially when there's randomness involved in the training process.
+Here, we get a testing accuracy of around 30%, which is still lower than the training data (as expected). This is the best test accuracy we've seen so far, as well as an MAE on the lower end (0.61). This makes sense, as gradient boosting is a powerful technique that can capture complex relationships between variables — not just linear relationships or clusters based on euclidean distance. However, all three models have similar accuracy and MAEs for the testing data, so it's hard to definitively say which is the best model—especially when there's randomness involved in the training process.
