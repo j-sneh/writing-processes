@@ -1,6 +1,6 @@
 ---
 title: "Analysis Fall 23"
-author: "Abhi Thanvi, Jonathan Sneh"
+author: "Abhi Thanvi (athanvi2), Jonathan Sneh (jsneh2)"
 date: "2023-12-04"
 output: 
   pdf_document: default
@@ -39,13 +39,19 @@ library(umap)
 if (!require("RColorBrewer")) install.packages("RColorBrewer")
 library(RColorBrewer)
 library(gridExtra)
+if (!require("VGAM")) install.packages("VGAM")
+library(VGAM)
+if (!require("caret")) install.packages("caret")
+library(caret)
+if (!require("xgboost")) install.packages("xgboost")
+library(xgboost)
 ```
 
 
 \newpage
 # \textcolor{salmon}{Project Overview} \vspace{4mm}
 We highly recommend everyone to checkout our \href{https://github.com/j-sneh/writing-processes}{\textcolor{blue!70!white}{Github Repository}}
- for all the data cleansing, feature engineering, analysis, and other files! Many of our procedures are not included in the report, and the repo provides a behind-the-scenes access to that information! We understand it is important to understand each procedure but also reproduce results, therefore we have maintained a highly intuitive code-base for it! :)
+for all the data cleaning, feature engineering, analysis, and other files! Many of our procedures are not included in the report, and the repo provides a behind-the-scenes access to that information! We understand it is important to understand each procedure but also reproduce results, therefore we have maintained a readable code-base for it! :)
 
 ## \textcolor{magenta!80!black}{Goals}
 
@@ -199,6 +205,7 @@ data = cbind(score=df$score, data)
 train = data[-test_ids, ]
 test = data[test_ids, ]
 ```
+
 
 ## \textcolor{magenta!80!black}{K-Means Algorithm}
 
@@ -497,9 +504,9 @@ acc_data
 
 Since the score is an ordinal variable, we can use a proportional odds model—a type of linear model—to predict the score. We'll use the `VGAM` package to fit the model and use the `step4` function to do a stepwise selection to find the best model. `VGAM` is a package that allows for fitting of a multinomial/propodds (vector based) linear model. It assumes cumulative probabilities and keeps the same $\beta$ for all categories, but allows for different intercepts. 
 
-We'll use only non-collinear features and do a subset selection. We'll also convert `score` to an ordered factor to ensure that the model knows that it is an ordinal variable.
+We'll use only non-collinear features (`score, word_count_max, down_event_special_character, mae_cursor_position, down_time_std, down_event_control_keys, text_change_not_q, activity_input`) and do a subset selection. We'll also convert `score` to an ordered factor to ensure that the model knows that it is an ordinal variable.
 
-```{r}
+```{r, include=FALSE}
 train.supervised <- train
 train.supervised$score <- as.ordered(train.supervised$score)
 train.supervised <- subset(train.supervised, select=c(score, word_count_max, down_event_special_character, mae_cursor_position, down_time_std, down_event_control_keys, text_change_not_q, activity_input))
@@ -521,8 +528,7 @@ score_from_factor <- function(x) {
 head(train.supervised)
 ```
 
-```{r}
-library(VGAM)
+```{r, results='hide'}
 prop.wc <- vglm(score ~ word_count_max, data = train.supervised, family = propodds(reverse = F))
 
 prop.upper <- vglm(score ~ ., data = train.supervised, family = propodds(reverse = F))
@@ -532,27 +538,30 @@ summary(prop.upper)
 
 We can do a stepwise selection, starting from all variables, to find the best model. This will pick the model with the lowest AIC, which aims for better prediction error. 
 
-```{r}
+```{r, results='hide', message=FALSE}
 prop.step <- step4(prop.upper, scope = list(lower = prop.wc, upper = prop.upper), direction = "both")
 
 summary(prop.step)
 ```
 
-Looking at our selected model, we see that it drops `text_change_q`. Using our selected model, we can predict the probabilities of falling into each category and selecting the category with the highest probability as the predicted score. We can then compare the predicted scores to the actual scores to see how well our model did.
+Looking at our selected model, we see that it drops `text_change_q`. Furthermore, we notice that the largest magnitude coefficient is `-1.61549` for `word_count_max`. For the propodds model we trained, if a coefficient is negative, it means the probability of falling into a lower category decreases as the predictor increases. This makes sense, since we saw that the word count was positively correlated with the score. `down_event_control_keys` and `activity_input` are negatively correlated with the score, and we see positive coefficients for them, which checks out.
 
-```{r}
-head(predict(prop.step, newdata = train.supervised, type = "response"))
+Using our selected model, we can predict the probabilities of falling into each category and selecting the category with the highest probability as the predicted score. We can then compare the predicted scores to the actual scores to see how well our model did.
 
+```{r, include=FALSE}
 train.prop.probs <- predict(prop.step, newdata = train.supervised, type = "response")
 
 get_score <- function(x) { labels[which.max(x)] }
 # Column with maximum probability is the predicted score (label)
 train.prop.pred_score <- apply(train.prop.probs, 1, get_score)
-
-# Compare predicted scores to actual scores
-table(train.prop.pred_score, train.supervised$score)
-
+```
+```{r}
+# Confusion Matrix
+kable(table(train.prop.pred_score, train.supervised$score), caption = "Training Propodds Confusion Matrix")
+# Accuracy
 mean(conv(train.prop.pred_score) == conv(train.supervised$score))
+# MAE
+mean(abs(conv(train.prop.pred_score) - conv(train.supervised$score)))
 ```
 
 ```{r}
@@ -562,27 +571,25 @@ test.prop.probs <- predict(prop.step, newdata = test.supervised, type = "respons
 test.prop.pred_score <- apply(test.prop.probs, 1, get_score)
 
 # Compare predicted scores to actual scores
-table(test.prop.pred_score, test.supervised$score)
+# Confusion Matrix
+kable(table(test.prop.pred_score, test.supervised$score), caption = "Testing Propodds Confusion Matrix")
+# Accuracy
 mean(conv(test.prop.pred_score) == conv(test.supervised$score))
+# MAE
+mean(abs(conv(test.prop.pred_score) - conv(test.supervised$score)))
 ```
 
 Our model does okay, especially given that there are 12 categories. It predicts the correct score only around 32% of the time on the training and 28.7% on the testing data. From the confusion matrix, we see that the model is not very good at predicting the lower and upper extremes. It predicts a lot of the mid level scores (3 - 4.5), but is not good at differentiating between them. 
 
-Instead of looking at the predicted classification accuracy, we can look at the MAE. This will give us a better idea of how far off the predictions are. 
+This is why we can also look at the MAE, which will give us a better idea of how far off the score predictions are on average, since it is a numerical measure.
 
-```{r}
-mean(abs(conv(train.prop.pred_score) - conv(train.supervised$score)))
-
-mean(abs(conv(test.prop.pred_score) - conv(test.supervised$score)))
-```
-On average, the model is off by around 0.55 points on the training and 0.59 points on the testing data. This is a pretty good result, meaning that, on average, the score is only around one category off.
+On average, the model is off by around 0.55 points on the training and 0.59 points on the testing data. This is a pretty good result, meaning that, on average, the score is only a bit more than one level off.
 
 ## \textcolor{magenta!80!black}{K Nearest Neighbors}
 
 During our data analysis/unsupervised learning, we saw that the clustering algorithm(s) did not do a great job of separating the data. This is likely because the data has a lot of overlap. To see if this holds during actual prediction, we can try to use a KNN model to predict the score.
 
 We'll use the `caret` package to tune our `k` value through 10-fold cross validation. A larger `k` will introduce more bias in the model, and a smaller `k` will have a larger variance. Since there are lots of records, a large `k` value could be useful, without introducing too much bias—so we'll test a range of `k` values from 1 to 400. 
-
 
 ```{r}
 set.seed(432)
@@ -599,17 +606,18 @@ method = "knn", tuneGrid = kgrid, trControl = control)
 
 knn.tuned
 ```
-From the model output, we see that the best `k` value is 61, with an (cross-validated) accuracy of around 31.9%. We expect to see similar results checking with the entire testing dataset. This is similar to our proportional odds model. 
+
+From the model output, we saw that the best `k` value is 71, with a (cross-validated) accuracy of around 30.66%. We expect to see similar results checking with the entire training dataset. This is similar to our proportional odds model. 
 
 ```{r}
 set.seed(432)
 knn.train.pred <- predict(knn.tuned, newdata = train.supervised)
 # Confusion Matrix
-table(knn.train.pred, train$score)
+kable(table(knn.train.pred, train.supervised$score), caption = "Training KNN Confusion Matrix")
 # Accuracy
-mean(conv(knn.train.pred) == conv(train$score))
+mean(conv(knn.train.pred) == conv(train.supervised$score))
 # MAE
-mean(abs(conv(knn.train.pred) - conv(train$score)))
+mean(abs(conv(knn.train.pred) - conv(train.supervised$score)))
 ```
 
 Checking the full training data, we see that the accuracy is 34%! This is high, but we should be careful. The model could be overfitting to the training data. 
@@ -625,13 +633,15 @@ Let's also see how the model does on the testing data.
 ```{r}
 set.seed(432)
 knn.test.pred <- predict(knn.tuned, newdata = test.supervised)
+# Confusion Matrix
+kable(table(knn.test.pred, test.supervised$score), caption = "Testing KNN Confusion Matrix")
 # Accuracy
-mean(conv(knn.test.pred) == conv(test$score))
+mean(conv(knn.test.pred) == conv(test.supervised$score))
 # MAE
-mean(abs(conv(knn.test.pred) - conv(test$score)))
+mean(abs(conv(knn.test.pred) - conv(test.supervised$score)))
 ```
 
-The model does a noticably bit worse on the testing data, with an accuracy of around 24.5% (10 percentage point). This is likely an indicator that the model is overfitting to the training data and clusters/predictor spread is different between the training and testing data. This MAE is higher than the proportional odds model (0.57 for training, and 0.66 for testing). This indicates that the KNN model is less stable when capturing groups and less accurate than the proportional odds model.
+The model does a noticeably bit worse on the testing data, with an accuracy of around 24.5% (10 percentage points). This is likely an indicator that the model is overfitting to the training data and clusters/predictor spread is different between the training and testing data. This MAE is higher than the proportional odds model (0.57 for training, and 0.66 for testing). The KNN model only looks at euclidean distances. Our unsupervised learning showed that the clusters are overlapping, so it may have a hard time differentiating between scores and can be less accurate than the proportional odds model.
 
 ## \textcolor{magenta!80!black}{xgboost}
 
@@ -639,44 +649,65 @@ We saw from the literature review that gradient boosting was effective. So, we'l
 
 We'll tune the `eta` (learning rate), as this is a critical hyperparameter of gradient boosting. For small values of `eta`, the model will take longer to converge, but will be more accurate. For large values of `eta`, the model will converge quickly, but will be less accurate.
 
-We'll use the default max_depth (6) and an `nrounds` of 50, as this has been effective in the past, but will reduce the computational time. We'll pick the model with the lowest training error.
+We'll use the default `max_depth` (6) and an `nrounds` of 15, as we saw overfitting with larger `nrounds (50), and will reduce the computational time. We'll pick the model with the lowest training error.
 
 ```{r}
 set.seed(432)
 library(xgboost)
-eta_vals <- expand.grid(eta = c(0.01, 0.02, 0.1, 0.5, 1))
-errors <- rep(NA, nrow(eta_vals))
+eta_vals <- expand.grid(eta = c(0.01, 0.02, 0.03, 0.04, 0.05))
+accuracy <- rep(NA, nrow(eta_vals))
 for (i in 1:nrow(eta_vals)) {
-  model.xgb <- xgboost(data = as.matrix(train.supervised[, -1]), label = as.numeric(train.supervised$score) - 1, nrounds = 50, objective = "multi:softmax", 
+  model.xgb <- xgboost(data = as.matrix(train.supervised[, -1]), 
+  label = as.numeric(train.supervised$score) - 1, 
+  nrounds = 15, objective = "multi:softmax", 
   num_class = 12, eta = eta_vals$eta[i], verbose = 0)
 
   predictions <- predict(model.xgb, as.matrix(train.supervised[, -1]))
   labeled_predictions <- sapply(predictions + 1, score_from_factor)
-  errors[i] <- mean(conv(labeled_predictions) == conv(train.supervised$score))
+  accuracy[i] <- mean(conv(labeled_predictions) == conv(train.supervised$score))
 }
+```
 
-errors
-best_eta <- eta_vals[which.min(errors),]
+```{r}
+# eta_vals <- expand.grid(eta = c(0.01, 0.02, 0.03, 0.04, 0.05))
+accuracy
+best_eta <- eta_vals[which.max(accuracy),]
 best_eta
 ```
 
-We see that the best `eta` value is 0.01, with an error of  which is what we would expect since smaller steps will allow it to converge to a more precise optimum. 
-
-So, we'll use this `eta` value and predict on the testing data.
+We saw that the best `eta` value is `0.05`, with a training accuracy of `0.6024279`. This accuracy is much larger than any other training accuracy we've seen. xgboost can very quickly converge to 100% accuracy on the training data, especially with large `nrounds` and `eta` values. This may be an indicator that the model is overfitting to the training data. We saw this when we used larger `eta` values, so we chose smaller values and we can see how it does on the testing data.
 
 ```{r}
 set.seed(432)
-model.xgb <- xgboost(data = as.matrix(train.supervised[, -1]), label = as.numeric(train.supervised$score) - 1, nrounds = 50, objective = "multi:softmax", 
-  num_class = 12, eta = 0.01, verbose = 0)
+model.xgb <- xgboost(data = as.matrix(train.supervised[, -1]), 
+label = as.numeric(train.supervised$score) - 1, nrounds = 15, 
+objective = "multi:softmax", 
+num_class = 12, eta = best_eta, verbose = 0)
 
-predictions <- predict(model.xgb, as.matrix(test.supervised[, -1]))
-labeled_predictions <- sapply(predictions + 1, score_from_factor)
+train.predictions <- predict(model.xgb, as.matrix(train.supervised[, -1]))
+train.labeled_predictions <- sapply(predictions + 1, score_from_factor)
 
-# test accuracy
-mean(conv(labeled_predictions) == conv(test.supervised$score))
-
-# test MAE
-mean(abs(conv(labeled_predictions) - conv(test.supervised$score)))
+# confusion matrix
+kable(table(train.labeled_predictions, train.supervised$score), caption = "Training XGBoost Confusion Matrix")
+# train accuracy
+mean(conv(train.labeled_predictions) == conv(train.supervised$score))
+# train MAE
+mean(abs(conv(labeled_predictions) - conv(train.supervised$score)))
 ```
 
-Here, we get a testing accuracy of around 30%, which is still lower than the training data (as expected). This is the best test accuracy we've seen so far, as well as the lowest test MAE (0.57). This makes sense, as gradient boosting is a powerful technique that can capture complex relationships between variables — not just linear relationships or clusters based on euclidean distance.
+```{r}
+set.seed(432)
+test.predictions <- predict(model.xgb, as.matrix(test.supervised[, -1]))
+test.labeled_predictions <- sapply(test.predictions + 1, score_from_factor)
+
+# confusion matrix
+kable(table(test.labeled_predictions, test.supervised$score), caption = "Testing XGBoost Confusion Matrix")
+
+# # test accuracy
+mean(conv(test.labeled_predictions) == conv(test.supervised$score))
+
+# # test MAE
+mean(abs(conv(test.labeled_predictions) - conv(test.supervised$score)))
+```
+
+Here, we get a testing accuracy of around 30%, which is still lower than the training data (as expected). This is the best test accuracy we've seen so far, as well as an MAE on the lower end (0.61). This makes sense, as gradient boosting is a powerful technique that can capture complex relationships between variables — not just linear relationships or clusters based on euclidean distance. However, all three models have similar accuracy and MAEs, so it's hard to definitively say which is the best model—especially when there's randomness involved in the training process.
