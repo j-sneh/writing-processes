@@ -321,7 +321,7 @@ ggplot(umap_data, aes(x = UMAP1, y = UMAP2, color = Score)) +
   ylab("UMAP Dimension 2")
 ```
 
-We see that the clusters might not be very well separated and aren't globular, so it is reasonable to conclude that `K-Means` algorithm may struggle with this data in general and gives us key insight on the underlying structure of the data not being nicely seperable. This suggests further specialized data engineering or other advanced techniques needs to be performed in the future (which requires more time) if we want to explore/improve the cluster-seperability within our data. :(
+We see that the clusters might not be very well separated and aren't globular, so it is reasonable to conclude that `K-Means` algorithm may struggle with this data in general and gives us key insight on the underlying structure of the data not being nicely seperable. This suggests further specialized data engineering or other advanced techniques might be helpful.
 
 Investigation of the score distribution confirms and suggests that the underlying clustering structure of the data does not closely align with the structure of scores. Some trends are still present such as cluster 1 tends to capture those who score 3 to 6. (very spread apart). Similar trends can been seen using the graph above.
 
@@ -376,7 +376,7 @@ for (i in 1:5) {
 # Combine plots into a single grid
 grid_plot <- do.call(grid.arrange, c(plot_list, ncol = 2))  # Arrange in a grid
 ```
-It is clear that our KMeans algorithm does a good job clustering, but when considering the underlying relation to scores it fails to achieve seperability between clusters. In other words, while the clusters within seem strong and cohesive, they tend to be overlapping with other clusters (i.e. scores are overlapping amongs clusters) making k-means an overall bad fit for this kind of non-seperable data. 
+When considering the underlying relation to scores, KMeans fails to achieve seperability between clusters. In other words, while the clusters within seem strong and cohesive, they tend to be overlapping with other clusters (i.e. scores are overlapping amongs clusters) making k-means an overall bad fit for this kind of non-seperable data. 
 
 ## \textcolor{magenta!80!black}{Hierarchial Clustering}
 We select 7 clusters because there are 7 integer scores (after rounding half scores). The clustering structure in the data seems to support this number of clusters.
@@ -465,7 +465,7 @@ acc_data = as.matrix(
 
 acc_data
 ```
-It seems like most of our predictions are going into cluster 1. This seems like a bad algorithm too, there's lots of scores overlapping into 1 cluster! In general, since the data is not seperable and not globular in structure it is hard for clustering algorithms to perform well. This requires more time and work to mitigate these issues. Some techniques include scaling and centering our data, creating other features, maybe even performing a PCA to project our data onto a different to extract the principal dimension. Due to the nature of our short-windowed project, we would like to move onto Supervised Learning Algorithms, but keep in mind that these insights will be relevant! 
+Most of our predictions are going into cluster 1. This seems like a bad algorithm too, there's lots of scores overlapping into 1 cluster! In general, since the data is not seperable and not globular in structure it is hard for clustering algorithms to perform well. A PCA might be useful to reduce dimensionality and perform clustering, but we decided to maintain interpretability of our data and not use PCA in our supervised learning analysis.
 
 # \textcolor{salmon}{Supervised Learning Algorithms}
 
@@ -554,14 +554,14 @@ cat("Testing MAE: ", mean(abs(conv(test.prop.pred_score) - conv(test.supervised$
 # scale the table size
 # par(mar = c(4, 4, .1, .1))
 # plot the first table
-prop.k1 <- kable(prop.t1, caption = "Propodds Training Confusion Matrix") %>% kable_styling(full_width = F, position = "left", latex_options = c("scale_down", "HOLD_position"))
-prop.k2 <- kable(prop.t2, caption = "Propodds Testing Confusion Matrix") %>% kable_styling(full_width = F, position = "right", latex_options = c("scale_down", "HOLD_position"))
+prop.k1 <- kable(prop.t1, caption = "Propodds Training Confusion Matrix") %>% kable_styling(full_width = F, latex_options = c("scale_down", "HOLD_position"), font_size = 3)
 
-prop.k1
+prop.k2 <- kable(prop.t2, caption = "Propodds Testing Confusion Matrix") %>% kable_styling(full_width = F, latex_options = c("scale_down", "HOLD_position"), font_size = 3)
+
 prop.k2
 ```
 
-Our model does okay, especially given that there are 12 categories. It predicts the correct score only around 32% of the time on the training and 28.7% on the testing data. From the confusion matrix, we see that the model is not very good at predicting the lower and upper extremes. It predicts a lot of the mid level scores (3 - 4.5), but is not good at differentiating between them. 
+Our model does okay, especially given that there are 12 categories. It predicts the correct score only around 32% of the time on the training and 28.7% on the testing data. From the testing confusion matrix, we see that the model is not very good at predicting the lower and upper extremes. It predicts a lot of mid level scores (3 - 4.5), but is not good at differentiating between them. The same results are seen in the training confusion matrix (see Appendix for more). 
 
 This is why we can also look at the MAE, which will give us a better idea of how far off the score predictions are on average, since it is a numerical measure.
 
@@ -592,7 +592,7 @@ From the model output, we saw that the best `k` value is 71, with a (cross-valid
 set.seed(432)
 knn.train.pred <- predict(knn.tuned, newdata = train.supervised)
 # Confusion Matrix
-(table(knn.train.pred, train.supervised$score))
+knn.k1 <- kable(table(knn.train.pred, train.supervised$score), caption = "KNN Training Confusion Matrix") %>% kable_styling(full_width = F, latex_options = c("scale_down", "HOLD_position"), font_size = 3)
 # Accuracy
 cat("Accuracy: ", mean(conv(knn.train.pred) == conv(train.supervised$score)))
 # MAE
@@ -601,7 +601,7 @@ cat("MAE: ", mean(abs(conv(knn.train.pred) - conv(train.supervised$score))))
 
 Checking the full training data, we see that the accuracy is 34%! This is high, but we should be careful. The model could be overfitting to the training data. 
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, fig.dim=c(4,3)}
 plot(knn.tuned)
 ```
 
@@ -613,11 +613,13 @@ Let's also see how the model does on the testing data.
 set.seed(432)
 knn.test.pred <- predict(knn.tuned, newdata = test.supervised)
 # Confusion Matrix
-(table(knn.test.pred, test.supervised$score))
+knn.k2 <- kable(table(knn.test.pred, test.supervised$score), caption = "KNN Testing Confusion Matrix") %>% kable_styling(full_width = F, latex_options = c("scale_down", "HOLD_position"), font_size = 3)
 # Accuracy
 cat("Accuracy: ",mean(conv(knn.test.pred) == conv(test.supervised$score)))
 # MAE
 cat("MAE: ", mean(abs(conv(knn.test.pred) - conv(test.supervised$score))))
+
+knn.k2
 ```
 
 The model does a noticeably bit worse on the testing data, with an accuracy of around 24.5% (10 percentage points). This is likely an indicator that the model is overfitting to the training data and clusters/predictor spread is different between the training and testing data. This MAE is higher than the proportional odds model (0.57 for training, and 0.66 for testing). The KNN model only looks at euclidean distances. Our unsupervised learning showed that the clusters are overlapping, so it may have a hard time differentiating between scores and can be less accurate than the proportional odds model.
@@ -668,12 +670,14 @@ train.predictions <- predict(model.xgb, as.matrix(train.supervised[, -1]))
 train.labeled_predictions <- sapply(predictions + 1, score_from_factor)
 
 # confusion matrix
-(table(train.labeled_predictions, train.supervised$score))
+xgb.k1 <- kable(table(train.labeled_predictions, train.supervised$score), caption = "XGBoost Training Confusion Matrix") %>% kable_styling(full_width = F, latex_options = c("scale_down", "HOLD_position"), font_size = 3)
 # train accuracy
 cat("Train Accuracy: ", mean(conv(train.labeled_predictions) == conv(train.supervised$score)))
 # train MAE
 cat("Train MAE: ", mean(abs(conv(labeled_predictions) - conv(train.supervised$score))))
 ```
+
+We observe a very high training accuracy, for reasons we explained previously. See appendix for the training confusion matrices.
 
 ```{r, echo=FALSE}
 set.seed(432)
@@ -681,13 +685,25 @@ test.predictions <- predict(model.xgb, as.matrix(test.supervised[, -1]))
 test.labeled_predictions <- sapply(test.predictions + 1, score_from_factor)
 
 # confusion matrix
-(table(test.labeled_predictions, test.supervised$score))
+xgb.k2 <- kable(table(test.labeled_predictions, test.supervised$score), caption = "XGBoost Testing Confusion Matrix") %>% kable_styling(full_width = F, latex_options = c("scale_down", "HOLD_position"), font_size = 3)
 
 # # test accuracy
 cat("Test Accuracy: ", mean(conv(test.labeled_predictions) == conv(test.supervised$score)))
 
 # # test MAE
 cat("Test MAE: ", mean(abs(conv(test.labeled_predictions) - conv(test.supervised$score))))
+
+xgb.k2
 ```
 
 Here, we get a testing accuracy of around 30%, which is still lower than the training data (as expected). This is the best test accuracy we've seen so far, as well as an MAE on the lower end (0.61). This makes sense, as gradient boosting is a powerful technique that can capture complex relationships between variables — not just linear relationships or clusters based on euclidean distance. However, all three models have similar accuracy and MAEs for the testing data, so it's hard to definitively say which is the best model—especially when there's randomness involved in the training process.
+
+# \textcolor{salmon}{Appendix}
+
+```{r, echo=FALSE}
+prop.k1
+
+knn.k1
+
+xgb.k1
+```
