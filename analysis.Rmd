@@ -38,20 +38,21 @@ if (!require("umap")) install.packages("umap")
 library(umap)
 if (!require("RColorBrewer")) install.packages("RColorBrewer")
 library(RColorBrewer)
+library(gridExtra)
 ```
 
 
 \newpage
 # \textcolor{salmon}{Project Overview} \vspace{4mm}
-We highly recommend everyone to checkout our \href{https://github.com/j-sneh/writing-processes}{\textcolor{purple!70!white}{Github Repository}}
+We highly recommend everyone to checkout our \href{https://github.com/j-sneh/writing-processes}{\textcolor{blue!70!white}{Github Repository}}
  for all the data cleansing, feature engineering, analysis, and other files! Many of our procedures are not included in the report, and the repo provides a behind-the-scenes access to that information! We understand it is important to understand each procedure but also reproduce results, therefore we have maintained a highly intuitive code-base for it! :)
 
-## \textcolor{magenta!80!black}{Goals:}
+## \textcolor{magenta!80!black}{Goals}
 
-While this project is an assigned project for STAT 432 Fall 2023 (UIUC), our goal is to apply what we have learned in our class and generate not necessarily the "most accurate", but rather the most holistic solution on this unique problem. The topic we are dealing with \href{https://www.kaggle.com/competitions/linking-writing-processes-to-writing-quality}{\textcolor{purple!70!white}{Linking Writing Processes to Writing Quality}} where we explore data on typing behavior to predict essay quality between a score of 0-6 (inclusive) using many of the statistical learning techniques. Our work will help explore the relationship between learners’ writing behaviors and writing performance, which could provide valuable key insights for writing instruction, the development of automated writing evaluation techniques, and help in educational situations.
+While this project is an assigned project for STAT 432 Fall 2023 (UIUC), our goal is to apply what we have learned in our class and generate not necessarily the "most accurate", but rather the most holistic solution on this unique problem. The topic we are dealing with \href{https://www.kaggle.com/competitions/linking-writing-processes-to-writing-quality}{\textcolor{blue!70!white}{Linking Writing Processes to Writing Quality}} where we explore data on typing behavior to predict essay quality between a score of 0-6 (inclusive) using many of the statistical learning techniques. Our work will help explore the relationship between learners’ writing behaviors and writing performance, which could provide valuable key insights for writing instruction, the development of automated writing evaluation techniques, and help in educational situations.
  
 
-## \textcolor{magenta!80!black}{Approach:} 
+## \textcolor{magenta!80!black}{Approach} 
 We divide our work into three main section. 
 
   - **Data Processing** $\rightarrow$ Cleanse, extract, and engineer features for our Supervised and Unsupervised learning portion. Our data processing procedure also has some basic EDA work done to allow us to engineer valuable features.
@@ -59,7 +60,7 @@ We divide our work into three main section.
   - **Unsupervised Learning** $\rightarrow$ Perform clustering algorithms on the cleansed data (and 80-20 split).
   We chose to do K-Means and Hierarchical Clustering algorithms as we wanted to explore what we learned in class. These unsupervised techniques allow us to find hidden patterns in our data and act as an outlet for advanced EDA. How the clusters were chosen, what insights we drew, the good and bad about these clusters will all be explored later in this section. 
   
-  - **Regression/Classification Models** $\rightarrow$ It is in this section where we try to predict scores and aim to achieve our original goal. \textcolor{red}{**JONATHAN ADD YOUR STUFF HERE**} :D
+  - **Regression/Classification Models** $\rightarrow$ It is in this section where we try to predict scores and aim to achieve our original goal. TBD
 
 ## \textcolor{magenta!80!black}{Unique Approaches/Techniques:} 
 We generally tried to use as much as we could from our STAT 432 course materials as the source of knowlegde. There were moments where we did consult other topics such as pairing elbow method with Silhouette Plots (to determine how well the cluster fit), \textcolor{red}{**JONATHAN ADD YOUR STUFF HERE**...prolly the STAT 426 stuff?} :D
@@ -71,36 +72,35 @@ We generally tried to use as much as we could from our STAT 432 course materials
 # \textcolor{salmon}{Literature Review}
 We aim to understand our pursuit of understanding and addressing the problem statement, we embarked on a journey of reviewing existing submissions to gain insights and inspiration. This preliminary exploration aimed to familiarize ourselves with various approaches employed by others in the field.
 
-## Noteworthy Submissions
+## \textcolor{magenta!80!black}{Noteworthy Submissions}
 
-Upon reviewing the top-performing submissions, we observed a prevalent trend—the use of topics beyond the scope of our class and a preference for Python implementation. Among these submissions, one that stood out was by Maok Yongsuk [\[Code Here\]](https://www.kaggle.com/code/yongsukprasertsuk/writing-processes-to-quality-0-584/notebook), achieving the highest public score of 0.584.
+Upon reviewing the top-performing submissions, we observed a prevalent trend—the use of topics beyond the scope of our class and a preference for Python implementation. Among these submissions, one that stood out was by Maok Yongsuk's \href{https://www.kaggle.com/code/yongsukprasertsuk/writing-processes-to-quality-0-584/notebook}{\textcolor{blue!70!white}{Noteboook}} which achieved the highest public score of 0.584.
 
-## Maok Yongsuk's Approach
+## \textcolor{magenta!80!black}{Maok Yongsuk's Approach}
 
-Maok's methodology deviated from the conventional as he introduced an essay constructor for tokenization. This innovative approach facilitated the extraction of meaningful features from textual data, enabling the model to capture intricate patterns within essays. Notably, he opted for Python's `LightGBM` function, a variant of the XGBoost framework employing a leaf-wise tree growth strategy. This strategic choice results in a more balanced and potentially shallower tree, enhancing efficiency on large datasets. Another key aspect that caught our attention was Maok's adept use of feature engineering. Inspired by others in the field, he incorporated a set of features commonly utilized by Kaggle community members. These features, identified through rigorous exploration and collaboration, added valuable information to his model.
+Maok's methodology deviated from the conventional as he introduced an essay constructor for tokenization. This innovative approach facilitated the extraction of meaningful features from textual data, enabling the model to capture intricate patterns within essays. Notably, he opted for Python's `LightGBM` function, a variant of the XGBoost framework employing a leaf-wise tree growth strategy. This strategic choice results in a more balanced and potentially shallower tree, enhancing efficiency on large datasets. Another key aspect that caught our attention was Maok's intelligent use of feature engineering. Inspired by others in the field, he incorporated a set of features commonly utilized by Kaggle community members. These features, identified through rigorous exploration and collaboration, added valuable information to his model.
 
-## Other Submission Approaches
+## \textcolor{magenta!80!black}{Other Submission Approaches}
 
 In addition to Maok Yongsuk's approach, several other submissions demonstrated the utilization of topics outside our coursework. Notably, deep learning-based solutions and the combination of neural networks (NN) with `LightGBM` were prevalent strategies. Deep learning-based solutions and the integration of neural networks (NN) with LightGBM offer the potential to enhance prediction accuracy and create adaptive models. However, these approaches come with notable challenges. Firstly, they often incur increased computation costs, demanding substantial resources for training and potentially limiting their feasibility in resource-constrained projects. The inherent complexity of deep learning models poses interpretability challenges, hindering a clear understanding of their inner workings. 
 
 All in all, It was a common thread among all submissions to engage in feature engineering that made sense during the exploratory data analysis (EDA) process, which is a practice we intend to adopt. Furthermore, there is a consideration of exploring gradient boosting techniques for our project, aligning with what we know/learned from class and the strategies employed by successful submissions.
 
-
-## Implications for Our Project 
+## \textcolor{magenta!80!black}{Implications for Our Project}
 
 The incorporation of `LightGBM` for predictions, the utilization of engineered features through tokenization (including those derived from the essay constructor), and the integration of additional features sourced from the Kaggle community collectively contributed to Maok's remarkable achievement with a highest public score of 0.584. In considering our own project, we find inspiration in these ideas from all submissions we reviewed, evaluating their relevance to our class material and potential applicability to our unique context. As we progress, we aim to integrate insights from Maok's and other Kaggle submission approaches into our methodology, adapting and refining these concepts to enhance the robustness of our own model.
 
-## Citations
+## \textcolor{magenta!80!black}{Citations}
 
-- Maok Yongsuk's Kaggle Submission: \href{https://www.kaggle.com/code/yongsukprasertsuk/writing-processes-to-quality-0-584}{\textcolor{purple!70!white}{Maok Yongsuk}}
+- Maok Yongsuk's Kaggle Submission: \href{https://www.kaggle.com/code/yongsukprasertsuk/writing-processes-to-quality-0-584}{\textcolor{blue!70!white}{Maok Yongsuk}}
 
-- Other Submission: \href{https://www.kaggle.com/code/cody11null/lgbm-x2-nn}{\textcolor{purple!70!white}{Cody’s LGBM + NN}}
+- Other Submission: \href{https://www.kaggle.com/code/cody11null/lgbm-x2-nn}{\textcolor{blue!70!white}{Cody’s LGBM + NN}}
 
-- Other Submission 2 (LGBM + NN): \href{https://www.kaggle.com/code/seoyunje/feature-1-lgb-nn-ridge}{\textcolor{purple!70!white}{Seoyunje’s LGBM + NN}}
+- Other Submission 2 (LGBM + NN): \href{https://www.kaggle.com/code/seoyunje/feature-1-lgb-nn-ridge}{\textcolor{blue!70!white}{Seoyunje’s LGBM + NN}}
 
-- Research 1: \href{https://scikit-learn.org/stable/auto_examples/cluster/plot_kmeans_silhouette_analysis.html#:~:text=The%20silhouette%20plot%20displays%20a,like%20number%20of%20clusters%20visually.}{\textcolor{purple!70!white}{Research - Silhouette Plots}}
+- Research 1: \href{https://scikit-learn.org/stable/auto_examples/cluster/plot_kmeans_silhouette_analysis.html#:~:text=The%20silhouette%20plot%20displays%20a,like%20number%20of%20clusters%20visually.}{\textcolor{blue!70!white}{Research - Silhouette Plots}}
 
-- Research 2: \href{https://towardsdatascience.com/implementing-and-interpreting-ordinal-logistic-regression-1ee699274cf5}{\textcolor{purple!70!white}{Ordinal Logistic Regression}}
+- Research 2: \href{https://towardsdatascience.com/implementing-and-interpreting-ordinal-logistic-regression-1ee699274cf5}{\textcolor{blue!70!white}{Ordinal Logistic Regression}}
 
 \newpage
 # \textcolor{salmon}{Data Processing}
@@ -191,7 +191,7 @@ We observe some pairs of features that show signs of multicolinearity.
 
 This section dives into the tasks performed for the unsupervised learning algorithms. Currently, focusing on K-Means and Hierarchical Clustering. **THIS SECTION SUPER MESSY RN. Please feel free to edit or improve in any way**
 
-```{r}
+```{r TrainTestSplit, include=FALSE}
 # test train split
 test_ids = sample(1:nrow(df), as.integer(0.2 * nrow(df)))
 data = as.data.frame(scale(df[, -(1:2)]))
@@ -204,65 +204,83 @@ test = data[test_ids, ]
 
 using averaged inertia of a few clustering samples across a range of number of clusters (i.e., k=1, ..., 14)
 
-```{r}
+```{r elbow, message=FALSE}
 # Range of k values to try
-cluster_num_list <- 1:14
+num_clusters <- 1:14
 
-# Initialize a vector to store average inertias
-avg_inertia_list <- numeric(length(cluster_num_list))
+# Initialize a vector to store average within-cluster sum of squares (WCSS)
+avg_wcss_list <- numeric(length(num_clusters))
 
 # Iterate over different values of k
-for (k in cluster_num_list) {
-  sub_inertia_list <- numeric(3) # For storing inertia of each trial
-  
+for (k in num_clusters) {
+  sub_wcss_list <- numeric(3) # For storing WCSS of each trial
   for (i in 1:3) {
     set.seed(i) # Setting seed for reproducibility
     kmeans_result <- kmeans(train, centers=k, nstart=25, iter.max = 50)
-    sub_inertia_list[i] <- kmeans_result$tot.withinss
+    sub_wcss_list[i] <- kmeans_result$tot.withinss
   }
-  
-  avg_inertia_list[k] <- mean(sub_inertia_list)
+  avg_wcss_list[k] <- mean(sub_wcss_list)
 }
 
-# Plotting the elbow plot
-ggplot(data.frame(Clusters=cluster_num_list, Inertia=avg_inertia_list), 
-       aes(x=Clusters, y=Inertia)) +
-  geom_line() +
-  geom_point() +
+# Plotting the elbow plot with improved colors and labels
+ggplot(data.frame(Clusters=num_clusters, WCSS=avg_wcss_list), 
+       aes(x=Clusters, y=WCSS)) +
+  geom_line(color = "steelblue", size = 1.5) +  # Simpler blue color
+  geom_point(color = "darkorange", size = 3) +  # Orange points
   theme_minimal() +
-  ggtitle("Elbow Method for Optimal k") +
+  theme(panel.grid.major = element_line(color = "gray", linetype = "dashed"),  # Add grid lines
+        axis.text = element_text(color = "black"),  # Ensure text color is readable
+        plot.title = element_text(hjust = 0.5, size = 16, face = "bold"),  # Centered title
+        axis.title = element_text(size = 12)) +  # Adjust axis title size
+  ggtitle("Optimal Number of Clusters using K-Means") +
   xlab("Number of Clusters") +
-  ylab("Average Inertia")
-
+  ylab("Average Within-Cluster Sum of Squares")
 ```
 
-selected `k=5` clusters as closest to "elbow" of the inertia plot
+Although slightly hard to see the elbow, we selected `k=5` clusters as closest to "elbow" of the above plot.
 
-```{r}
+```{r kmeans}
+set.seed(100)
 # Perform K-means clustering
-# Here, we are specifying 3 clusters, but you can change this number
+# Here, we are specifying 5 clusters, but you can change this number
 result <- kmeans(train, centers=5)
-
-ggplot(data.frame(train), aes(x=score, y=word_count_max)) +
-  geom_point(aes(color=factor(result$cluster))) +
-  scale_color_discrete(name="Cluster") +
-  theme_minimal() +
-  ggtitle("K-means Clustering")
 ```
 
-Using silhouette scores to evaluate how well the clustering structure fits in terms of similarity, i.e., more higher scores in a cluster imply greater similarity of points to its own cluster and poorer similarity to other clusters. The average silhouette score of 0.17 suggests that the clusters are somewhat favorably well separated and that the points within clusters aren't too dispersed. However, cluster 4 shows issues with cohesion and separation.
+```{r kmeansgraph}
+# Plotting the K-means clustering results
+ggplot(data.frame(train), aes(x=score, y=word_count_max)) +
+  geom_point(aes(color=factor(result$cluster)), 
+             size = 3, alpha = 0.8) +
+  scale_color_manual(name="Cluster", 
+                     values = c("darkorange", "forestgreen", 
+                                "red", "purple", "steelblue")) +
+  theme_minimal() +
+  theme(legend.position="bottom") +
+  ggtitle("K-means Clustering (k=5)") +
+  xlab("Score") +
+  ylab("Word Count Max")
+```
+It seems like the clusters aren't clearly distinct and have overlapping present from the above graph. 
 
-```{r}
+Therefore, we used silhouette scores to evaluate how well the clustering structure fits in terms of similarity, i.e., more higher scores in a cluster imply greater similarity of points to its own cluster and poorer similarity to other clusters. 
+
+```{r silhouette}
 # Compute silhouette information
 silhouette_info <- silhouette(result$cluster, dist(train))
 
-# Plotting the silhouette plot
-plot(silhouette_info, col=1:k, border=NA, main="Silhouette Plot")
+# Define a custom color palette for silhouette plot
+custom_palette <- c("#377eb8", "#ff7f00", "#4daf4a", "#f781bf", "#a65628")
+
+# Plotting the silhouette plot with improved colors and organization
+plot(silhouette_info, col=custom_palette, border=NA, main="Silhouette Plot",
+     cex.names=0.8, cex.axis=0.8, cex.main=1, cex.lab=0.9, density=70)
+
 ```
+The average silhouette score of 0.17 suggests that the clusters are somewhat favorably well separated and that the points within clusters aren't too dispersed. However, cluster 4 shows issues with cohesion and separation.
 
-Additionally, with projecting the data using UMAP, we see that the clusters might not be very well separated and aren't globular, so it is reasonable to conclude that KMeans algorithm may struggle with this data.
+Additionally, with projecting the data using UMAP, we see that the clusters might not be very well separated and aren't globular, so it is reasonable to conclude that KMeans algorithm may struggle with this data in general and gives us key insight on the underlying structure of the data not being nicely seperable. This suggests further specialized data engineering or other advanced techniques needs to be performed in the future (which requires more time) if we want to explore/improve the cluster-seperability within our data. :(
 
-```{r}
+```{r cluster_umap}
 umap_result <- umap(train, n_components = 2)
 
 umap_data <- as.data.frame(umap_result$layout)
@@ -274,52 +292,66 @@ umap_data$Cluster <- clusters
 # Choose a palette
 palette <- brewer.pal(n = 5, name = "Set1")  # Adjust 'name' as needed
 
+# Plotting the UMAP projection with enhancements
 ggplot(umap_data, aes(x = UMAP1, y = UMAP2, color = Cluster)) +
-  geom_point(alpha = 0.7) +
+  geom_point(alpha = 0.6, size = 3) +  # Adjust transparency and point size
   scale_color_manual(values = palette) +
   theme_minimal() +
-  ggtitle("UMAP Projection of the Data")
+  theme(legend.position="bottom") +  # Move legend to the bottom
+  ggtitle("UMAP Projection of the Data (Clusters)") +
+  xlab("UMAP Dimension 1") +
+  ylab("UMAP Dimension 2")
 
 ```
+As we can see our cluster UMAP shows that while we do cluster pretty well, the seperation between the cluster is not very good. The data is not well clustered. For further analysis, here we see the distribution of scores in another UMAP
 
-Here's distribution of scores in UMAP
-
-```{r}
+```{r scores_umap}
 scores <- as.ordered(as.data.frame(train)$score)
 umap_data$Score <- scores
 
+# Choose a palette for score levels
+score_palette <- rainbow(12)
+
+# Plotting the UMAP projection with score coloring and enhancements
 ggplot(umap_data, aes(x = UMAP1, y = UMAP2, color = Score)) +
-  geom_point(alpha = 0.7) +
-  scale_color_manual(values = rainbow(12)) +
+  geom_point(alpha = 0.6, size = 3) +  # Adjust transparency and point size
+  scale_color_manual(values = score_palette, name = "Score Level") +
   theme_minimal() +
-  ggtitle("UMAP Projection of the Data")
+  ggtitle("UMAP Projection of the Data (Score)") +
+  xlab("UMAP Dimension 1") +
+  ylab("UMAP Dimension 2")
+
 ```
 
-investigation of the score distribution suggests that the underlying clustering structure of the data does not closely align with the structure of scores.
+Investigation of the score distribution confirms and suggests that the underlying clustering structure of the data does not closely align with the structure of scores.
 
-spread of data between kmeans clusters and scores. characterizations are as follows:
+The spread of data between K-Means clusters and scores. characterizes as follows:
 
-- cluster 1 tends to capture those who score 3 to 6.
-- cluster 2 tends to capture those who score between 3.5 to 4.5
-- cluster 3 tends to capture those who score 1.5 to 4.5
-- cluster 4 tends to capture those who score 3.5 to 4
-- cluster 5 tends to capture those who score 2.5 to 4.5
+- cluster 1 tends to capture those who score 3 to 6. (very spread apart)
+- cluster 2 tends to capture those who score between 3.5 to 4.5 (tight knit)
+- cluster 3 tends to capture those who score 1.5 to 4.5 (very spread apart)
+- cluster 4 tends to capture those who score 3.5 to 4 (tight knit)
+- cluster 5 tends to capture those who score 2.5 to 4.5 (spread apart)
 
 e.g., a user who scores around 5 is likely to be in cluster 1
 
-while there are some relationships, it would appear that the dispersions of scores between groups tend to overlap heavily and are not well separate to segment the groups in a very meaningful way. However clusters 1 and 2 vs. clusters 3, 4, and 5 seem to show some disparity.
+[**JONATHAN CAN U CONFIRM ABOVE ANALYSIS, IN CASE IT CHANGED DUE TO RE-RUN]
 
-```{r}
-t(table(result$cluster, df[-test_ids, ]$score)) / nrow(df[-test_ids, ])
+While there are some relationships, it would appear that the dispersions of scores between groups tend to overlap heavily and are not well separate to segment the groups in a very meaningful way. However clusters 1 and 2 vs. clusters 3, 4, and 5 seem to show some disparity, but this isn't super useful as we care about clusters that are well-seperated amongst one another also. 
+
+```{r cont_table}
+# Create a contingency table without normalization
+contingency_table <- table(result$cluster, df$score[-test_ids])
+
+# View the contingency table
+print(contingency_table)
 ```
-
-to predict on new data in test...
-
+Testing on new Data
 ```{r}
-assign_cluster <- function(new_data, centers) {
-  # Calculate Euclidean distances from each new data point to each cluster center
-  distances <- as.matrix(dist(rbind(centers, new_data), method = "euclidean"))
-  distances <- distances[(nrow(centers)+1):nrow(distances), 1:nrow(centers)]
+assign_cluster <- function(new_data, centers, distance_method = "euclidean") {
+  # Calculate distances from each new data point to each cluster center
+  distances <- as.matrix(dist(rbind(centers, new_data), method = distance_method))
+  distances <- distances[(nrow(centers) + 1):nrow(distances), 1:nrow(centers)]
   
   # Assign each new data point to the nearest cluster
   max.col(-distances)
@@ -329,75 +361,72 @@ new_clusters <- assign_cluster(test, result$centers)
 ```
 
 ```{r}
-acc_data = as.matrix(
+# Assuming 'new_clusters' and 'df' are available
+acc_data <- as.matrix(
   t(table(new_clusters, df[test_ids, ]$score)) / nrow(df[test_ids, ])
 )
 
+# Create a list to store individual plots
+plot_list <- list()
+
 for (i in 1:5) {
-  prop_plot = ggplot(
-  data.frame(
+  prop_plot <- ggplot(
+    data.frame(
       Index = rownames(acc_data), Proportion = acc_data[, i]
-    ), 
-  aes(x = Index, y = Proportion)) +
-  geom_bar(stat = "identity") +
-  theme_minimal() +
-  xlab("Index") +
-  ylab("Proportion") +
-  ggtitle("Histogram of Proportions") + 
-  ylim(c(0, 1))
-  print(prop_plot)
-}
-```
+    ),
+    aes(x = Index, y = Proportion, fill = factor(Index))
+  ) +
+    geom_bar(stat = "identity", position = "dodge", width = 0.7) +
+    labs(title = paste("Cluster", i)) +
+    theme_minimal() +
+    theme(
+      axis.text.x = element_text(angle = 45, hjust = 1),
+      legend.position = "none"
+    )
 
-
-```{r}
-acc_data = as.matrix(
-  t(table(new_clusters, as.integer(df[test_ids, ]$score))) / nrow(df[test_ids, ])
-)
-```
-
-```{r}
-for (i in 1:5) {
-  prop_plot = ggplot(
-  data.frame(
-      Index = rownames(acc_data), Proportion = acc_data[, i]
-    ), 
-  aes(x = Index, y = Proportion)) +
-  geom_bar(stat = "identity") +
-  theme_minimal() +
-  xlab("Index") +
-  ylab("Proportion") +
-  ggtitle("Histogram of Proportions") + 
-  ylim(c(0, 1))
-  print(prop_plot)
+  plot_list[[i]] <- prop_plot
 }
 
-```
+# Combine plots into a single grid
+grid_plot <- do.call(grid.arrange, c(plot_list, ncol = 2))  # Arrange in a grid
 
-selected Ward's linkage due to cohesion and separability issues in the data. we select 7 clusters because there are 7 integer scores (after rounding half scores). The clustering structure in the data seems to support this number of clusters.
+# Print the combined grid plot
+grid_plot
+```
 
 ## \textcolor{magenta!80!black}{Hierarchial Clustering}
+We selected to do Ward's linkage due to cohesion and separability issues in the data. we select 7 clusters because there are 7 integer scores (after rounding half scores). The clustering structure in the data seems to support this number of clusters.
 
 ```{r}
 distance_matrix <- dist(train, method = "euclidean")
 
-hc <- hclust(distance_matrix, method = "ward.D")
+# Complete Linkage
+hc_complete <- hclust(distance_matrix, method = "complete")
 
-plot(hc, main = "Hierarchical Clustering with Complete Linkage", 
-     xlab = "", sub = "", cex = 0.9)
+# Single Linkage
+hc_single <- hclust(distance_matrix, method = "single")
+
+# Average Linkage
+hc_average <- hclust(distance_matrix, method = "average")
+
+# Plotting dendrograms
+par(mfrow = c(1, 3))
+plot(hc_complete, main = "Complete Linkage", xlab = "", sub = "", cex = 0.9)
+plot(hc_single, main = "Single Linkage", xlab = "", sub = "", cex = 0.9)
+plot(hc_average, main = "Average Linkage", xlab = "", sub = "", cex = 0.9)
 ```
 
 ```{r}
 k <- 7  # Number of clusters
-plot(hc, main = "Hierarchical Clustering with Complete Linkage", 
+plot(hc_complete, main = "Hierarchical Clustering with Complete Linkage", 
      xlab = "", sub = "", cex = 0.9)
-rect.hclust(hc, k = k, border = "red")  # You can change the border color if you like
+rect.hclust(hc_complete, k = k, border = "red")  # You can change the border color if you like
 ```
 
 clustering structure in UMAP
 
 ```{r}
-clusters <- as.factor(cutree(hc, k = k))
+clusters <- as.factor(cutree(hc_complete, k = k))
 umap_data$ClusterHC <- clusters
 
 # Choose a palette
@@ -429,7 +458,7 @@ e.g., a user who scores around 5 is likely to be in cluster 5
 t(table(umap_data$ClusterHC, df[-test_ids, ]$score)) / nrow(df[-test_ids, ])
 ```
 
-to predict on new data in test...
+To predict on new data in test...
 
 ```{r}
 # Function to calculate centroids of clusters
@@ -457,28 +486,10 @@ new_clusters <- predict_cluster(test, train, clusters)
 
 ```{r}
 acc_data = as.matrix(
-  t(table(new_clusters, as.integer(df[test_ids, ]$score))) / nrow(df[test_ids, ])
-)
+  t(table(new_clusters, as.integer(df[test_ids, ]$score))))
+
+acc_data
 ```
-
-```{r}
-for (i in 1:7) {
-  prop_plot = ggplot(
-  data.frame(
-      Index = rownames(acc_data), Proportion = acc_data[, i]
-    ), 
-  aes(x = Index, y = Proportion)) +
-  geom_bar(stat = "identity") +
-  theme_minimal() +
-  xlab("Index") +
-  ylab("Proportion") +
-  ggtitle("Histogram of Proportions") + 
-  ylim(c(0, 1))
-  print(prop_plot)
-}
-
-```
-
 
 # \textcolor{salmon}{Supervised Learning Algorithms}
 
