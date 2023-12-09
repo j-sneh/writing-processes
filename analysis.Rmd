@@ -49,51 +49,52 @@ library(xgboost)
 
 
 \newpage
-# \textcolor{salmon}{Project Overview} \vspace{4mm}
+# \textcolor{salmon}{Project Overview} \vspace{2mm}
 We highly recommend everyone to checkout our \href{https://github.com/j-sneh/writing-processes}{\textcolor{blue!70!white}{Github Repository}}
 for all the data cleaning, feature engineering, analysis, and other files! Many of our procedures are not included in the report, and the repo provides a behind-the-scenes access to that information! We understand it is important to understand each procedure but also reproduce results, therefore we have maintained a readable code-base for it! :)
 
 ## \textcolor{magenta!80!black}{Goals}
 
-While this project is an assigned project for STAT 432 Fall 2023 (UIUC), our goal is to apply what we have learned in our class and generate not necessarily the "most accurate", but rather the most holistic solution on this unique problem. The topic we are dealing with \href{https://www.kaggle.com/competitions/linking-writing-processes-to-writing-quality}{\textcolor{blue!70!white}{Linking Writing Processes to Writing Quality}} where we explore data on typing behavior to predict essay quality between a score of 0-6 (inclusive) using many of the statistical learning techniques.
+While this is an assigned project for STAT 432 Fall 2023 (UIUC), our goal was to apply what we have learned in our class and generate not necessarily the "most accurate", but rather the most holistic solution on this unique problem. The topic we are dealing with is  \href{https://www.kaggle.com/competitions/linking-writing-processes-to-writing-quality}{\textcolor{blue!70!white}{Linking Writing Processes to Writing Quality}} where we explore typing behavior to predict essay quality between a score of 0-6 (inclusive).
  
 ## \textcolor{magenta!80!black}{Approach} 
-We divide our work into three main section. 
+We divided our work into three main section. 
 
-  - **Data Processing** $\rightarrow$ Clean, extract, and engineer features in python notebook. Important for our Supervised and Unsupervised learning portion.
+  - **Data Processing** $\rightarrow$ Cleaned, extracted, and engineered features in python notebook. Important for our Supervised and Unsupervised learning portion.
   
-  - **Unsupervised Learning** $\rightarrow$ Perform clustering algorithms on the cleansed data (and 80-20 split).
-  We chose to do K-Means and Hierarchical Clustering algorithms as we wanted to explore what we learned in class. These unsupervised techniques allow us to find hidden patterns in our data and act as an outlet for advanced EDA.
+  - **Unsupervised Learning** $\rightarrow$ Performed clustering algorithms on the cleansed data (and 80-20 split).
+  We chose to do K-Means and Hierarchical Clustering algorithms (paired with UMAP) as we wanted to explore what we learned in class. These unsupervised techniques allowed us to find hidden patterns in our data and act as an outlet for advanced EDA.
   
-  - **Regression/Classification Models** $\rightarrow$ It is in this section where we try to predict scores and aim to achieve our original goal. TBD
+  - **Regression/Classification Models** $\rightarrow$  Predicted/classifued scores and attempted to achieve our original goal.To be specific, we performed `KNN` and `XGBoost` from what we learned in our class, but also performed `Proportional Odds Model (GLM)` which is something we learned in STAT 426. 
 
 ## \textcolor{magenta!80!black}{Unique Approaches/Techniques:} 
-We generally tried to use as much as we could from our STAT 432 course materials as the source of knowlegde. There were moments where we did consult other topics such as pairing elbow method with Silhouette Plots (to determine how well the cluster fit), \textcolor{red}{**JONATHAN ADD YOUR STUFF HERE**...prolly the STAT 426 stuff?} :D
+We generally used as much knowledge from STAT 432 as we could, but there were moments where we did consult other topics such as pairing elbow method with Silhouette Plots (to determine how well the cluster fit), and GLM model from STAT 426. We have cited sources we consulted including other Kaggle notebooks. :D
 
-## \textcolor{magenta!80!black}{Conclusion:} TBD
+## \textcolor{magenta!80!black}{Conclusion:} 
+We concluded this project with successful implementation of all the models we wanted to on the data. Unfortunately, the data is very complicated to work with for our basic modelling techniques to work super accurately! The reason is the data was not nicely separable and globular in nature which made it hard for the models to classify the user essays into accurate scores. Our predictions accuracy were better than we expected, but still not super high. On average, we were about `+/- 0.6` from the actual prediction score which isn't bad given our algorithms and features. There was a lot of overlap/confusion for the model predictions around the range of 3.5-4.5 due to lot of essays being in that region causing overlap between clusters and predicted scores. Based on that, research and experience, we highly recommend spending more efforts on feature engineering using Unsupervised/Supervised Learning techniques and advanced algorithms such as tokenization, Deep Learning (DL)/Neural Network (NN) architecture, etc. to get more confident and accurate scores for model predictions. 
 
 
 \newpage
 # \textcolor{salmon}{Literature Review}
-We aim to understand our pursuit of understanding and addressing the problem statement, we embarked on a journey of reviewing existing submissions to gain insights and inspiration. This preliminary exploration aimed to familiarize ourselves with various approaches employed by others in the field.
+Before we addressed the problem statement, we chose to go on a research journey of reviewing existing submissions to gain insights and inspiration from. This preliminary exploration greatly helped us, specially for feautre engineering, as we aimed to familiarize ourselves with various approaches employed by others in the field.
 
 ## \textcolor{magenta!80!black}{Noteworthy Submissions}
 
-Upon reviewing the top-performing submissions, we observed a prevalent trend—the use of topics beyond the scope of our class and a preference for Python implementation. Among these submissions, one that stood out was by Maok Yongsuk's \href{https://www.kaggle.com/code/yongsukprasertsuk/writing-processes-to-quality-0-584/notebook}{\textcolor{blue!70!white}{Noteboook}} which achieved the highest public score of 0.584.
+Upon reviewing the top-performing submissions, we observed a prevalent trend. The use of topics beyond the scope of our class and a preference for Python implementation. Among these submissions, one that stood out was by Maok Yongsuk's \href{https://www.kaggle.com/code/yongsukprasertsuk/writing-processes-to-quality-0-584/notebook}{\textcolor{blue!70!white}{Noteboook}} which achieved the highest public score of 0.584.
 
 ## \textcolor{magenta!80!black}{Maok Yongsuk's Approach}
 
-Maok's methodology deviated from the conventional as he introduced an essay constructor for tokenization. This innovative approach facilitated the extraction of meaningful features from textual data, enabling the model to capture intricate patterns within essays. Notably, he opted for Python's `LightGBM` function, a variant of the XGBoost framework employing a leaf-wise tree growth strategy. This strategic choice results in a more balanced and potentially shallower tree, enhancing efficiency on large datasets. Another key aspect that caught our attention was Maok's intelligent use of feature engineering. Inspired by others in the field, he incorporated a set of features commonly utilized by Kaggle community members. These features, identified through rigorous exploration and collaboration, added valuable information to his model.
+Maok's methodology deviated from the conventional ones as he introduced an essay constructor for tokenization. This innovative approach facilitated the extraction of meaningful features from textual data, enabling the model to capture intricate patterns within essays. Notably, he opted for Python's `LightGBM` function, a variant of the XGBoost framework employing a leaf-wise tree growth strategy. This strategic choice resulted in a more balanced and potentially shallower tree, enhancing efficiency on large datasets. Another key aspect that caught our attention was Maok's intelligent use of feature engineering. He was by inspired by others and incorporated a set of features commonly utilized by Kaggle community members. These features were identified through rigorous exploration and collaboration by the community members, therefore adding valuable information to his model.
 
 ## \textcolor{magenta!80!black}{Other Submission Approaches}
 
-In addition to Maok Yongsuk's approach, several other submissions demonstrated the utilization of topics outside our coursework. Notably, deep learning-based solutions and the combination of neural networks (NN) with `LightGBM` were prevalent strategies. Deep learning-based solutions and the integration of neural networks (NN) with LightGBM offer the potential to enhance prediction accuracy and create adaptive models. However, these approaches come with notable challenges. Firstly, they often incur increased computation costs, demanding substantial resources for training and potentially limiting their feasibility in resource-constrained projects. The inherent complexity of deep learning models poses interpretability challenges, hindering a clear understanding of their inner workings. 
+In addition to Maok Yongsuk's approach, several other submissions demonstrated the utilization of topics outside our coursework. Notably, deep learning-based solutions and the combination of neural networks (NN) paired with `LightGBM` were prevalent strategies. Deep learning-based solutions and the integration of neural networks (NN) with LightGBM clearly enhanced prediction accuracy and created adaptive models for the submissions. However, these approaches came with notable challenges. Firstly, they often incur increased computation costs, demanding substantial resources for training and potentially limiting their feasibility in time and resource-constrained projects like ours. The obvious complexity of deep learning models posed interpretability challenges (for us and others) which hinders a clear understanding of their work's inner working. 
 
-All in all, It was a common thread among all submissions to engage in feature engineering that made sense during the exploratory data analysis (EDA) process, which is a practice we intend to adopt. Furthermore, there is a consideration of exploring gradient boosting techniques for our project, aligning with what we know/learned from class and the strategies employed by successful submissions.
+All in all, It was a common thread among all submissions to engage in feature engineering that made sense during the exploratory data analysis (EDA) process, which is a practice we adopted. Furthermore, there is a consideration of exploring gradient boosting techniques for our project, aligning with what we know/learned from class and the strategies employed by successful submissions.
 
 ## \textcolor{magenta!80!black}{Implications for Our Project}
 
-The incorporation of `LightGBM` for predictions, the utilization of engineered features through tokenization (including those derived from the essay constructor), and the integration of additional features sourced from the Kaggle community collectively contributed to Maok's remarkable achievement with a highest public score of 0.584. In considering our own project, we find inspiration in these ideas from all submissions we reviewed, evaluating their relevance to our class material and potential applicability to our unique context. As we progress, we aim to integrate insights from Maok's and other Kaggle submission approaches into our methodology, adapting and refining these concepts to enhance the robustness of our own model.
+The incorporation of `LightGBM` for predictions, the utilization of engineered features through tokenization (including those derived from the essay constructor), and the integration of additional features sourced from the Kaggle community collectively contributed to Maok's remarkable achievement with a highest public score of 0.584. In considering our own project, we drew inspiration from all submissions we reviewed and their ideas, evaluating their relevance to our class material and potential applicability to our unique context. As we progress, we aim to integrate insights from Maok's and other Kaggle submission approaches into our methodology, such as Feature Engineering and XGBoost to enhance the robustness of our own model. 
 
 ## \textcolor{magenta!80!black}{Citations}
 
@@ -150,10 +151,11 @@ df_show %>% kable("latex", booktabs = TRUE) %>%
   kable_styling(latex_options = c("striped", "HOLD_position", "scale_down"))
 ```
 
-
+\newpage
 ## \textcolor{magenta!80!black}{Correlation Summary}
+We observed some pairs of features that showed signs of multicolinearity. 
 
-```{r plots, echo=FALSE, message=FALSE, fig.dim=c(6,6)}
+```{r plots, echo=FALSE, message=FALSE, fig.dim=c(7,4)}
 df$mae_cursor_position_norm = df$mae_cursor_position / df$word_count_max
 # Assuming 'data' is your dataframe
 numeric_features <- df %>% select_if(is.numeric)
@@ -168,28 +170,18 @@ ggplot(melted_cor_matrix, aes(Var1, Var2, fill = value)) +
                        limit = c(-1,1), space = "Lab", 
                        name="Pearson\nCorrelation") +
   theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y =  element_text(hjust = 1, size = 6),
         axis.title = element_blank()) +coord_fixed()
 ```
 
-We observe some pairs of features that show signs of multicolinearity. 
-
-- The word count metrics are highly correlated as expected, we could reasonably choose the maximum measure to use.
-
-- Some features form parallel or perpendicular colinearity. 
-  - activity_input and activity_nonproduction (negative)
-  - activity_input and down_event_alphanumeric (positive)
-  - activity_input and down_event_control_keys (negative)
-  - activity_input and text_change_nochange (negative)
+Some features formed parallel or perpendicular colinearity. Examples: `activity_input` and `activity_nonproduction` (negative); `activity_input` and `down_event_alphanumeric` (positive); `activity_input` and `down_event_control_keys` (negative); `activity_input` and `text_change_nochange` (negative).
   
-- Importantly, we're interested in what's correlated with the user score feature
-  - word count measures have a positive correlation with score, suggesting an association between longer essays and higher scores
-  - Error rate of cursor positions against a "streamed" output also shows a positive correlation with score - i.e., essays written with less frequent or extreme edits is somewhat associated with higher scores.
-  - Note: a positive correlation is also found between error rate of cursor positions with max word count, suggesting further that longer essays are associated with higher deviation from a "streamed" output. This suggests the possibility that interpretation of "streamed" deviation is influenced by the paper length (i.e., longer papers support possibility of edits being made "further away" from the current "streamed" position, thus increasing the error rate). When we normalized the error rate by the paper size, we see that the correlation between the normalized error rate and the paper score is nearly zero. So, this feature is likely irrelevant for analysis.
+We were more interested in what's correlated with the user score feature: `word count` measures have a positive correlation with score, suggesting an **association between longer essays and higher scores**. `Error rate of cursor positions` against a "streamed" output also shows a positive correlation with score. In example, essays written with less frequent or extreme edits is somewhat associated with higher scores. **Please also note:** A positive correlation was also found between error rate of cursor positions with max word count, suggesting further that longer essays are associated with higher deviation from a "streamed" output. This suggests the possibility that interpretation of "streamed" deviation is influenced by the paper length (i.e., longer papers support possibility of edits being made "further away" from the current "streamed" position, thus increasing the error rate). When we normalized the error rate by the paper size, we see that the correlation between the normalized error rate and the paper score is nearly zero. So, this feature is likely irrelevant for analysis and was not considered later on.
 
 # \textcolor{salmon}{Unsupervised Learning Algorithms}
 
-This section dives into the tasks performed for the unsupervised learning algorithms. We mainly focused on K-Means and Hierarchical Clustering. 
+This section dives into the tasks performed for the unsupervised learning algorithms. We mainly focused on K-Means and Hierarchical Clustering as a means to find hidden patterns within our data, in other words, to perform advanced EDA.
 
 ```{r TrainTestSplit, include=FALSE}
 # test train split
@@ -202,9 +194,9 @@ test = data[test_ids, ]
 
 ## \textcolor{magenta!80!black}{K-Means Algorithm}
 
-The first question we want to asks ourselves is how many clusters do we want? While we did play around with cluster numbers, we chose to use the elbow-method to determine our count for clusters. 
+The section is where we drew insights from K-Means algorithm and it's relation to score feature. The first question we asked ourselves is how many clusters do we want? After experimenting, we chose to use the elbow-method to determine our count for clusters. 
 
-```{r elbow, message=FALSE, echo=FALSE, warning=FALSE, fig.dim=c(5,3)}
+```{r elbow, message=FALSE, echo=FALSE, warning=FALSE, fig.dim=c(6,2)}
 # Range of k values to try
 num_clusters <- 1:14
 
@@ -237,7 +229,7 @@ ggplot(data.frame(Clusters=num_clusters, WCSS=avg_wcss_list),
   ylab("Average WCSS")
 ```
 
-Although slightly hard to see the elbow, we selected `k=5` clusters to fit our k-means model as it seemed closest to the elbow of the plot we have above.
+It is slightly hard to see the elbow, but we selected `k=5` clusters to fit our k-means model as it seemed closest to the elbow from the plot above.
 
 ```{r kmeans, include=FALSE}
 set.seed(100)
@@ -261,26 +253,14 @@ ggplot(data.frame(train), aes(x=score, y=word_count_max)) +
   ylab("Word Count Max")
 ```
 
-It seems like the clusters aren't clearly distinct and have overlapping present from the above graph. 
+The clusters aren't clearly distinct and have overlapping present. Therefore, we used silhouette scores to evaluate how well the clustering structure fits in terms of similarity within our cluster. In other words, higher silhoutte score for a cluster suggest greater similarity of points within its own cluster and poorer similarity to other clusters which is what we consider to be a good seperable cluster. Referring to the `Silhouette Plot of 5 Clusters` (shown in the appendix), we saw that average silhouette score of 0.17 suggests that the clusters are somewhat favorably well separated and that the points within clusters aren't too dispersed. However, we can see negative score with cluster 3 which shows indicated issues of cohesion and separation. This kind of confirms our insights we drew from the `K-Means Clustering` plot initially. We dove into more detail by projecting the data using `umap`. This gave us some more insights into the hidden patterns that were present within our data. 
 
-Therefore, we used silhouette scores to evaluate how well the clustering structure fits in terms of similarity, i.e., more higher scores in a cluster imply greater similarity of points to its own cluster and poorer similarity to other clusters. 
-
-```{r silhouette, echo=FALSE, fig.dim=c(5,4)}
-# Compute silhouette information
-silhouette_info <- silhouette(result$cluster, dist(train))
-
-# Define a custom color palette for silhouette plot
-custom_palette <- c("#377eb8", "#ff7f00", "#4daf4a", "#f781bf", "#a65628")
-
-plot(silhouette_info, col=custom_palette, border=NA, main="Silhouette Plot",
-     cex.names=0.8, cex.axis=0.8, cex.main=1, cex.lab=0.9, density=70)
+```{r silhouette, include=FALSE}
+# In the Appendix, the graph was acting wonky (even with include=FALSE)
+# So the code for the plot has also been moved to appendix :(
 ```
 
-The average silhouette score of 0.17 suggests that the clusters are somewhat favorably well separated and that the points within clusters aren't too dispersed. However, we can see negative score with cluster 3 which shows issues with cohesion and separation.
-
-Let's see what going in more detail by projecting the data using `umap`. This should give us some more insights into the hidden patterns that are present within our data. 
-
-```{r cluster_umpa, echo=FALSE, fig.dim=c(6,4)}
+```{r cluster_umpa, echo=FALSE, fig.dim=c(6,3.5)}
 umap_result <- umap(train, n_components = 2)
 
 umap_data <- as.data.frame(umap_result$layout)
@@ -303,7 +283,7 @@ ggplot(umap_data, aes(x = UMAP1, y = UMAP2, color = Cluster)) +
   ylab("UMAP Dimension 2")
 ```
 
-```{r umapscore, echo=FALSE, fig.dim=c(6,4)}
+```{r umapscore, echo=FALSE, fig.dim=c(6,3.5)}
 scores <- as.ordered(as.data.frame(train)$score)
 umap_data$Score <- scores
 
@@ -320,12 +300,7 @@ ggplot(umap_data, aes(x = UMAP1, y = UMAP2, color = Score)) +
   xlab("UMAP Dimension 1") +
   ylab("UMAP Dimension 2")
 ```
-
-We see that the clusters might not be very well separated and aren't globular, so it is reasonable to conclude that `K-Means` algorithm may struggle with this data in general and gives us key insight on the underlying structure of the data not being nicely seperable. This suggests further specialized data engineering or other advanced techniques might be helpful.
-
-Investigation of the score distribution confirms and suggests that the underlying clustering structure of the data does not closely align with the structure of scores. Some trends are still present such as cluster 1 tends to capture those who score 3 to 6. (very spread apart). Similar trends can been seen using the graph above.
-
-While there are some relationships, it would appear that the dispersions of scores between groups tend to overlap heavily and are not well separate to segment the groups in a very meaningful way. However clusters 1 and 2 vs. clusters 3, 4, and 5 seem to show some disparity, but this isn't super useful as we care about clusters that are well-seperated amongst one another also. 
+We saw that the clusters might not be very well separated and aren't globular from the UMAP, so it was reasonable to conclude that `K-Means` algorithm may struggle with this data in general. This also gave us key insight on the underlying structure of the data not being nicely separable. This suggested further specialized data engineering or other advanced techniques might be helpful, but we moved forward to explore more and progress our project forward.
 
 ```{r cont_table, include=FALSE}
 # Create a contingency table without normalization
@@ -334,7 +309,7 @@ contingency_table <- table(result$cluster, df$score[-test_ids])
 # View the contingency table
 print(contingency_table)
 ```
-Let's use K-Means on testing data and see how the cluster assignments look like
+So let's see how K-Means performs on testing data and see how the cluster assignments look like
 ```{r testcluster, include=FALSE}
 assign_cluster <- function(new_data, centers, distance_method = "euclidean") {
   # Calculate distances from each new data point to each cluster center
@@ -347,11 +322,15 @@ assign_cluster <- function(new_data, centers, distance_method = "euclidean") {
 new_clusters <- assign_cluster(test, result$centers)
 ```
 
-```{r plotcluster, echo=FALSE}
+```{r plotcluster, echo=FALSE, fig.dim=c(6,5)}
 # Assuming 'new_clusters' and 'df' are available
 acc_data <- as.matrix(
   t(table(new_clusters, df[test_ids, ]$score)))
 
+# Convert acc_data matrix to Kable format
+kmeans.test.ct <- kable(acc_data, caption = "K-Means Testing Contingecy Table") %>%
+  kable_styling(full_width = F, latex_options = c("scale_down", "HOLD_position"), 
+                font_size = 3)
 # Create a list to store individual plots
 plot_list <- list()
 
@@ -376,10 +355,13 @@ for (i in 1:5) {
 # Combine plots into a single grid
 grid_plot <- do.call(grid.arrange, c(plot_list, ncol = 2))  # Arrange in a grid
 ```
-When considering the underlying relation to scores, KMeans fails to achieve seperability between clusters. In other words, while the clusters within seem strong and cohesive, they tend to be overlapping with other clusters (i.e. scores are overlapping amongs clusters) making k-means an overall bad fit for this kind of non-seperable data. 
+While there are some relationships, it would appear that the dispersions of scores between groups tend to overlap heavily and are not well separate to segment the groups in a very meaningful way. However clusters 1 and 2 vs. clusters 3, 4, and 5 seem to show some disparity, but this isn't super useful as we care more about individual clusters being well-seperated.
+
+When considering the underlying relation to scores, K-Means failed to achieve seperability between clusters. In other words, while the clusters within seem strong and cohesive, they tended to be overlapping with other clusters (i.e. scores are overlapping in different clusters) making k-means an overall bad fit for this kind of non-seperable data. As suggested before, specialized data engineering or other advanced techniques might be helpful.
 
 ## \textcolor{magenta!80!black}{Hierarchial Clustering}
-We select 7 clusters because there are 7 integer scores (after rounding half scores). The clustering structure in the data seems to support this number of clusters.
+
+For our hierarchial clustering, we performed with euclidean distance using `complete`, `single`, and  `average` linkage but chose `complete linkage` as it was the better resulting clustering linkage among the the three. Since our clustering structure in the datanicely supported 7 clusters (for the 7 integer scores after rounding half scores), we selected 7 clusters for the clustering. 
 
 ```{r, include=FALSE}
 distance_matrix <- dist(train, method = "euclidean")
@@ -411,7 +393,7 @@ rect.hclust(hc_complete, k = k, border = "red")  # You can change the border col
 
 
 
-```{r, echo=FALSE, fig.dim=c(5,3)}
+```{r, echo=FALSE, fig.width=5, fig.height=3}
 # clustering structure in UMAP
 clusters <- as.factor(cutree(hc_complete, k = k))
 umap_data$ClusterHC <- clusters
@@ -419,11 +401,12 @@ umap_data$ClusterHC <- clusters
 # Choose a palette
 palette <- brewer.pal(n = k, name = "Set1")  # Adjust 'name' as needed
 
-ggplot(umap_data, aes(x = UMAP1, y = UMAP2, color = ClusterHC)) +
+HC.umap.plot <- ggplot(umap_data, aes(x = UMAP1, y = UMAP2, color = ClusterHC)) +
   geom_point(alpha = 0.7) +
   scale_color_manual(values = palette) +
   theme_minimal() +
-  ggtitle("UMAP Projection of the Data")
+  ggtitle("Hierarchial Clutering - UMAP Projection of the Data")
+
 ```
 
 
@@ -465,7 +448,9 @@ acc_data = as.matrix(
 
 acc_data
 ```
-Most of our predictions are going into cluster 1. This seems like a bad algorithm too, there's lots of scores overlapping into 1 cluster! In general, since the data is not seperable and not globular in structure it is hard for clustering algorithms to perform well. A PCA might be useful to reduce dimensionality and perform clustering, but we decided to maintain interpretability of our data and not use PCA in our supervised learning analysis.
+We noticed the issue of how the tree was being split (non-uniformly) and we wanted to explore more on what's going on. Therefore, we did another UMAP. If we refer to the `Hierarchial Clutering - UMAP Project of the Data` (shown in the appendix), we will clearly see that most of our predictions are going into cluster 1. This isn't ideal because this means lots of scores will be overlapping into 1 cluster! This confirms our previous insights we drew from K-Means section. 
+
+Therefore, in general, we concludde that since the data is not seperable and not globular in structure it is hard for clustering algorithms to perform well. For future, a PCA might be useful to reduce dimensionality to perform clustering, but we made the decision to maintain interpretability of our data and not use PCA in our supervised learning analysis.
 
 # \textcolor{salmon}{Supervised Learning Algorithms}
 
@@ -527,10 +512,11 @@ train.prop.pred_score <- apply(train.prop.probs, 1, get_score)
 ```{r}
 # Confusion Matrix
 prop.t1 <- (table(train.prop.pred_score, train.supervised$score))
-# Accuracy
-cat("Training Accuracy: ", mean(conv(train.prop.pred_score) == conv(train.supervised$score)))
-# MAE
-cat("Training MAE: ", mean(abs(conv(train.prop.pred_score) - conv(train.supervised$score))))
+# Accuracy and MAE
+cat("Training Accuracy: ", 
+    mean(conv(train.prop.pred_score) == conv(train.supervised$score)), 
+    " Training MAE: ", 
+    mean(abs(conv(train.prop.pred_score) - conv(train.supervised$score))))
 ```
 
 ```{r, echo=FALSE}
@@ -541,10 +527,11 @@ test.prop.pred_score <- apply(test.prop.probs, 1, get_score)
 
 # Confusion Matrix
 prop.t2 <- (table(test.prop.pred_score, test.supervised$score))
-# Accuracy
-cat("Testing Accuracy: ", mean(conv(test.prop.pred_score) == conv(test.supervised$score)))
-# MAE
-cat("Testing MAE: ", mean(abs(conv(test.prop.pred_score) - conv(test.supervised$score))))
+# Accuracy and MAE
+cat("Testing Accuracy: ", 
+    mean(conv(test.prop.pred_score) == conv(test.supervised$score)), 
+    " Testing MAE: ", 
+    mean(abs(conv(test.prop.pred_score) - conv(test.supervised$score))))
 ```
 
 ```{r, echo=FALSE}
@@ -593,15 +580,15 @@ set.seed(432)
 knn.train.pred <- predict(knn.tuned, newdata = train.supervised)
 # Confusion Matrix
 knn.k1 <- kable(table(knn.train.pred, train.supervised$score), caption = "KNN Training Confusion Matrix") %>% kable_styling(full_width = F, latex_options = c("scale_down", "HOLD_position"), font_size = 3)
-# Accuracy
-cat("Accuracy: ", mean(conv(knn.train.pred) == conv(train.supervised$score)))
-# MAE
-cat("MAE: ", mean(abs(conv(knn.train.pred) - conv(train.supervised$score))))
+# Accuracy and MAE
+cat("Accuracy: ",
+    mean(conv(knn.train.pred) == conv(train.supervised$score)), 
+    " MAE: ", mean(abs(conv(knn.train.pred) - conv(train.supervised$score))))
 ```
 
 Checking the full training data, we see that the accuracy is 34%! This is high, but we should be careful. The model could be overfitting to the training data. 
 
-```{r, echo=FALSE, fig.dim=c(4,3)}
+```{r, echo=FALSE, fig.dim=c(6,3)}
 plot(knn.tuned)
 ```
 
@@ -614,10 +601,9 @@ set.seed(432)
 knn.test.pred <- predict(knn.tuned, newdata = test.supervised)
 # Confusion Matrix
 knn.k2 <- kable(table(knn.test.pred, test.supervised$score), caption = "KNN Testing Confusion Matrix") %>% kable_styling(full_width = F, latex_options = c("scale_down", "HOLD_position"), font_size = 3)
-# Accuracy
-cat("Accuracy: ",mean(conv(knn.test.pred) == conv(test.supervised$score)))
-# MAE
-cat("MAE: ", mean(abs(conv(knn.test.pred) - conv(test.supervised$score))))
+# Accuracy and MAE
+cat("Accuracy: ",mean(conv(knn.test.pred) == conv(test.supervised$score)), 
+" MAE: ", mean(abs(conv(knn.test.pred) - conv(test.supervised$score))))
 
 knn.k2
 ```
@@ -671,10 +657,11 @@ train.labeled_predictions <- sapply(predictions + 1, score_from_factor)
 
 # confusion matrix
 xgb.k1 <- kable(table(train.labeled_predictions, train.supervised$score), caption = "XGBoost Training Confusion Matrix") %>% kable_styling(full_width = F, latex_options = c("scale_down", "HOLD_position"), font_size = 3)
-# train accuracy
-cat("Train Accuracy: ", mean(conv(train.labeled_predictions) == conv(train.supervised$score)))
-# train MAE
-cat("Train MAE: ", mean(abs(conv(labeled_predictions) - conv(train.supervised$score))))
+# train accuracy and train MAE
+cat("Train Accuracy: ", 
+    mean(conv(train.labeled_predictions) == conv(train.supervised$score)), 
+    " Train MAE: ", 
+    mean(abs(conv(labeled_predictions) - conv(train.supervised$score))))
 ```
 
 We observe a very high training accuracy, for reasons we explained previously. See appendix for the training confusion matrices.
@@ -687,20 +674,35 @@ test.labeled_predictions <- sapply(test.predictions + 1, score_from_factor)
 # confusion matrix
 xgb.k2 <- kable(table(test.labeled_predictions, test.supervised$score), caption = "XGBoost Testing Confusion Matrix") %>% kable_styling(full_width = F, latex_options = c("scale_down", "HOLD_position"), font_size = 3)
 
-# # test accuracy
-cat("Test Accuracy: ", mean(conv(test.labeled_predictions) == conv(test.supervised$score)))
-
-# # test MAE
-cat("Test MAE: ", mean(abs(conv(test.labeled_predictions) - conv(test.supervised$score))))
+# test accuracy and test mae
+cat("Test Accuracy: ", 
+    mean(conv(test.labeled_predictions) == conv(test.supervised$score)), 
+    "Test MAE: ", 
+    mean(abs(conv(test.labeled_predictions) - conv(test.supervised$score))))
 
 xgb.k2
 ```
 
 Here, we get a testing accuracy of around 30%, which is still lower than the training data (as expected). This is the best test accuracy we've seen so far, as well as an MAE on the lower end (0.61). This makes sense, as gradient boosting is a powerful technique that can capture complex relationships between variables — not just linear relationships or clusters based on euclidean distance. However, all three models have similar accuracy and MAEs for the testing data, so it's hard to definitively say which is the best model—especially when there's randomness involved in the training process.
 
+\newpage
 # \textcolor{salmon}{Appendix}
 
 ```{r, echo=FALSE}
+# Compute silhouette information
+silhouette_info <- silhouette(result$cluster, dist(train))
+
+# Define a custom color palette for silhouette plot
+custom_palette <- c("#377eb8", "#ff7f00", "#4daf4a", "#f781bf", "#a65628")
+
+plot(silhouette_info, col=custom_palette, border=NA, 
+     main="Silhouette Plot of 5 Clusters",
+     cex.names=0.8, cex.axis=0.8, cex.main=1, cex.lab=0.9, density=70)
+
+kmeans.test.ct
+
+HC.umap.plot
+
 prop.k1
 
 knn.k1
